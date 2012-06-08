@@ -102,7 +102,7 @@ This program is destributed in the hope that it will be useful, but WITHOUT ANY 
         </TranslationItem>
       </translationItems>
     </TranslationCategory>
-    <TranslationCategory Name="DashboardEditor">
+        <TranslationCategory Name="ControlDashboardEditor">
       <translationItems>
         <TranslationItem Name="Add" Property="Text">
           <Value>新增</Value>

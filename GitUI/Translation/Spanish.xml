@@ -190,7 +190,7 @@ Este programa es distribuido con la esperanza de que sea útil, pero SIN NINGUNA
         </TranslationItem>
       </translationItems>
     </TranslationCategory>
-    <TranslationCategory Name="DashboardEditor">
+        <TranslationCategory Name="ControlDashboardEditor">
       <translationItems>
         <TranslationItem Name="Add" Property="Text">
           <Value>Agregar</Value>

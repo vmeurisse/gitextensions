@@ -10,13 +10,14 @@ using GitUI.Properties;
 #if !__MonoCS__
 using Microsoft.WindowsAPICodePack.Taskbar;
 #endif
+using ResourceManager;
 using ResourceManager.Translation;
 using Settings = GitCommands.Settings;
 
 namespace GitUI
 {
     [ProvideProperty("DontTranslate", typeof(Component))]
-    public class GitExtensionsForm : Form, ITranslate, IExtenderProvider
+    public class GitExtensionsForm : Form, ITranslate, IDontTranslate, IExtenderProvider
     {
         private static Icon ApplicationIcon = GetApplicationIcon(Settings.IconStyle, Settings.IconColor);
 
@@ -415,6 +416,11 @@ namespace GitUI
                 _dontTranslateComponents.Add(component);
             else
                 _dontTranslateComponents.Remove(component);
+        }
+
+        public bool CheckComponent(Component component)
+        {
+            return _dontTranslateComponents.Contains(component);
         }
     }
 }

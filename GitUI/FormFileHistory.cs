@@ -316,15 +316,15 @@ namespace GitUI
         public override void AddTranslationItems(Translation translation)
         {
             base.AddTranslationItems(translation);
-            TranslationUtl.AddTranslationItemsFromFields(FormBrowseName, filterRevisionsHelper, translation);
-            TranslationUtl.AddTranslationItemsFromFields(FormBrowseName, filterBranchHelper, translation);
+            TranslationUtl.AddTranslationItemsFromFields(FormBrowseName, this, filterRevisionsHelper, translation);
+            TranslationUtl.AddTranslationItemsFromFields(FormBrowseName, this, filterBranchHelper, translation);
         }
 
         public override void TranslateItems(Translation translation)
         {
             base.TranslateItems(translation);
-            TranslationUtl.TranslateItemsFromFields(FormBrowseName, filterRevisionsHelper, translation);
-            TranslationUtl.TranslateItemsFromFields(FormBrowseName, filterBranchHelper, translation);
+            TranslationUtl.TranslateItemsFromFields(FormBrowseName, this, filterRevisionsHelper, translation);
+            TranslationUtl.TranslateItemsFromFields(FormBrowseName, this, filterBranchHelper, translation);
         }
 
     }

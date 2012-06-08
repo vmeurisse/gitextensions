@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.ComponentModel;
 using System.Windows.Forms;
@@ -19,6 +20,11 @@ namespace ResourceManager.Translation
 
         public static void AddTranslationItemsFromFields(string category, object obj, Translation translation)
         {
+            AddTranslationItemsFromFields(category, obj as IDontTranslate, obj, translation);
+        }
+
+        public static void AddTranslationItemsFromFields(string category, IDontTranslate dontTranslateComponents, object obj, Translation translation)
+        {
             if (obj == null)
                 return;
 
@@ -28,10 +34,15 @@ namespace ResourceManager.Translation
                 if (AllowTranslateProperty(value))
                     translation.AddTranslationItem(category, item, propertyInfo.Name, value);
             };
-            ForEachField(obj, action);
+            ForEachField(obj, dontTranslateComponents, action);
         }
 
         public static void TranslateItemsFromFields(string category, object obj, Translation translation)
+        {
+            TranslateItemsFromFields(category, obj as IDontTranslate, obj, translation);
+        }
+
+        public static void TranslateItemsFromFields(string category, IDontTranslate dontTranslateComponents, object obj, Translation translation)
         {
             if (obj == null)
                 return;
@@ -48,10 +59,10 @@ namespace ResourceManager.Translation
                         propertyInfo.SetValue(itemObj, value, null);
                 }
             };
-            ForEachField(obj, action);
+            ForEachField(obj, dontTranslateComponents, action);
         }
 
-        public static void ForEachField(object obj,  Action<string, object, PropertyInfo> action)
+        private static void ForEachField(object obj,  IDontTranslate dontTranslateComponents, Action<string, object, PropertyInfo> action)
         {
             if (obj == null)
                 return;
@@ -69,11 +80,10 @@ namespace ResourceManager.Translation
                 if (fieldInfo.FieldType.IsSubclassOf(typeof(Component)))
                 {
                     Component c = fieldInfo.GetValue(obj) as Component;
+                    if (dontTranslateComponents != null && dontTranslateComponents.CheckComponent(c))
+                        continue;
 
-                    Func<PropertyInfo, bool> IsTranslatableItem = delegate(PropertyInfo propertyInfo)
-                    {
-                        return IsTranslatableItemInComponent(propertyInfo);
-                    };
+                    Func<PropertyInfo, bool> IsTranslatableItem = IsTranslatableItemInComponent;
 
                     ForEachProperty(c, paction, IsTranslatableItem);
                 }
@@ -84,14 +94,14 @@ namespace ResourceManager.Translation
                     Func<PropertyInfo, bool> IsTranslatableItem = delegate(PropertyInfo propertyInfo)
                     {
                         return IsTranslatableItemInDataGridViewColumn(propertyInfo, c);
-                    };         
+                    };
 
                     ForEachProperty(c, paction, IsTranslatableItem);                    
                 }
             }
         }
 
-        public static void ForEachProperty(object obj, Action<PropertyInfo> action, Func<PropertyInfo, bool> IsTranslatableItem)
+        private static void ForEachProperty(object obj, Action<PropertyInfo> action, Func<PropertyInfo, bool> IsTranslatableItem)
         {
             if (obj == null)
                 return;
@@ -101,7 +111,7 @@ namespace ResourceManager.Translation
                     action(propertyInfo);
         }
 
-        public static bool IsTranslatableItemInComponent(PropertyInfo propertyInfo)
+        private static bool IsTranslatableItemInComponent(PropertyInfo propertyInfo)
         {
             if (propertyInfo.PropertyType != typeof(string))
                 return false;
@@ -116,7 +126,7 @@ namespace ResourceManager.Translation
             return false;
         }
 
-        public static bool IsTranslatableItemInDataGridViewColumn(PropertyInfo propertyInfo, DataGridViewColumn viewCol)
+        private static bool IsTranslatableItemInDataGridViewColumn(PropertyInfo propertyInfo, DataGridViewColumn viewCol)
         {
             return propertyInfo.Name.Equals("HeaderText", StringComparison.CurrentCulture) && viewCol.Visible;
         }

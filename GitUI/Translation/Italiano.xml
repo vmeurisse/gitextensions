@@ -162,7 +162,7 @@ Questo programma è rilasciato nella speranza che possa essere utile, ma SENZA N
         </TranslationItem>
       </translationItems>
     </TranslationCategory>
-    <TranslationCategory Name="DashboardEditor">
+        <TranslationCategory Name="ControlDashboardEditor">
       <translationItems>
         <TranslationItem Name="Add" Property="Text">
           <Value>Aggiungi</Value>

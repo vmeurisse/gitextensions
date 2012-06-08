@@ -212,7 +212,7 @@ Wilt u teruggaan naar het dashboard en het item verwijderen uit de 'recent geope
         </TranslationItem>
       </translationItems>
     </TranslationCategory>
-    <TranslationCategory Name="DashboardEditor">
+        <TranslationCategory Name="ControlDashboardEditor">
       <translationItems>
         <TranslationItem Name="Add" Property="Text">
           <Value>Toevoegen</Value>

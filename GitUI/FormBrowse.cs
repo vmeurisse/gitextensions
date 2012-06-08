@@ -100,16 +100,16 @@ namespace GitUI
 #endif
         private bool _dontUpdateOnIndexChange;
         private ToolStripGitStatus _toolStripGitStatus;
-        private FilterRevisionsHelper filterRevisionsHelper;
-        private FilterBranchHelper _FilterBranchHelper;
+        private FilterRevisionsHelper filterRevisionsHelper_;
+        private FilterBranchHelper filterBranchHelper_;
 
         public FormBrowse(string filter)
         {
             syncContext = SynchronizationContext.Current;
 
             InitializeComponent();
-            filterRevisionsHelper = new FilterRevisionsHelper(toolStripTextBoxFilter, toolStripDropDownButton1, RevisionGrid, toolStripLabel2, this);
-            _FilterBranchHelper = new FilterBranchHelper(toolStripBranches, toolStripDropDownButton2, RevisionGrid);
+            filterRevisionsHelper_ = new FilterRevisionsHelper(toolStripTextBoxFilter, toolStripDropDownButton1, RevisionGrid, toolStripLabel2, this);
+            filterBranchHelper_ = new FilterBranchHelper(toolStripBranches, toolStripDropDownButton2, RevisionGrid);
             Translate();
             _NoDiffFilesChangesText = DiffFiles.GetNoFilesText();
 
@@ -132,7 +132,7 @@ namespace GitUI
             }
             RevisionGrid.SelectionChanged += RevisionGridSelectionChanged;
             DiffText.ExtraDiffArgumentsChanged += DiffTextExtraDiffArgumentsChanged;
-            filterRevisionsHelper.SetFilter(filter);
+            filterRevisionsHelper_.SetFilter(filter);
             DiffText.SetFileLoader(getNextPatchFile);
 
             GitTree.ImageList = new ImageList();
@@ -315,7 +315,7 @@ namespace GitUI
             _repositoryHostsToolStripMenuItem.Visible = RepoHosts.GitHosters.Count > 0;
             if (RepoHosts.GitHosters.Count == 1)
                 _repositoryHostsToolStripMenuItem.Text = RepoHosts.GitHosters[0].Description;
-            _FilterBranchHelper.InitToolStripBranchFilter();
+            filterBranchHelper_.InitToolStripBranchFilter();
             if (hard)
                 ShowRevisions();
             RefreshWorkingDirCombo();
@@ -2267,15 +2267,15 @@ namespace GitUI
         public override void AddTranslationItems(Translation translation)
         {
             base.AddTranslationItems(translation);
-            TranslationUtl.AddTranslationItemsFromFields(Name, filterRevisionsHelper, translation);
-            TranslationUtl.AddTranslationItemsFromFields(Name, _FilterBranchHelper, translation);
+            TranslationUtl.AddTranslationItemsFromFields(Name, this, filterRevisionsHelper_, translation);
+            TranslationUtl.AddTranslationItemsFromFields(Name, this, filterBranchHelper_, translation);
         }
 
         public override void TranslateItems(Translation translation)
         {
             base.TranslateItems(translation);
-            TranslationUtl.TranslateItemsFromFields(Name, filterRevisionsHelper, translation);
-            TranslationUtl.TranslateItemsFromFields(Name, _FilterBranchHelper, translation);
+            TranslationUtl.TranslateItemsFromFields(Name, this, filterRevisionsHelper_, translation);
+            TranslationUtl.TranslateItemsFromFields(Name, this, filterBranchHelper_, translation);
         }
 
 

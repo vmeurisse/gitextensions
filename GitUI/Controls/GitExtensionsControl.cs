@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace GitUI
 {
     [ProvideProperty("DontTranslate", typeof(Component))]
-    public class GitExtensionsControl : UserControl, ITranslate, IExtenderProvider
+    public class GitExtensionsControl : UserControl, ITranslate, IDontTranslate, IExtenderProvider
     {
         private HashSet<Component> _dontTranslateComponents;
 
@@ -154,6 +154,11 @@ namespace GitUI
                 _dontTranslateComponents.Add(component);
             else
                 _dontTranslateComponents.Remove(component);
+        }
+
+        public bool CheckComponent(Component component)
+        {
+            return _dontTranslateComponents.Contains(component);
         }
     }
 }

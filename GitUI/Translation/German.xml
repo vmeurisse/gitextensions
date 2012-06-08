@@ -218,7 +218,7 @@ Wollen Sie abbrechen und es von der Liste der zuletzt verwendeten Repositorys st
         </TranslationItem>
       </translationItems>
     </TranslationCategory>
-    <TranslationCategory Name="DashboardEditor">
+        <TranslationCategory Name="ControlDashboardEditor">
       <translationItems>
         <TranslationItem Name="Add" Property="Text">
           <Value>Hinzufügen</Value>
