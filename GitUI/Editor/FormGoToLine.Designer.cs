@@ -30,10 +30,10 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormGoToLine));
             this.lineLabel = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_LineNumberUpDown = new System.Windows.Forms.NumericUpDown();
+            this.LineNumberUpDown = new System.Windows.Forms.NumericUpDown();
             this.cancelBtn = new System.Windows.Forms.Button();
             this.okBtn = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this._NO_TRANSLATE_LineNumberUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LineNumberUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // lineLabel
@@ -42,23 +42,24 @@
             this.lineLabel.AutoSize = true;
             this.lineLabel.Location = new System.Drawing.Point(12, 9);
             this.lineLabel.Name = "lineLabel";
-            this.lineLabel.Size = new System.Drawing.Size(65, 13);
+            this.lineLabel.Size = new System.Drawing.Size(74, 15);
             this.lineLabel.TabIndex = 5;
             this.lineLabel.Text = "Line number";
             // 
-            // _NO_TRANSLATE_LineNumberUpDown
+            // LineNumberUpDown
             // 
-            this._NO_TRANSLATE_LineNumberUpDown.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this._NO_TRANSLATE_LineNumberUpDown.Location = new System.Drawing.Point(15, 25);
-            this._NO_TRANSLATE_LineNumberUpDown.Minimum = new decimal(new int[] {
+            this.SetDontTranslate(this.LineNumberUpDown, true);
+            this.LineNumberUpDown.ImeMode = System.Windows.Forms.ImeMode.Off;
+            this.LineNumberUpDown.Location = new System.Drawing.Point(15, 25);
+            this.LineNumberUpDown.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this._NO_TRANSLATE_LineNumberUpDown.Name = "_NO_TRANSLATE_LineNumberUpDown";
-            this._NO_TRANSLATE_LineNumberUpDown.Size = new System.Drawing.Size(210, 21);
-            this._NO_TRANSLATE_LineNumberUpDown.TabIndex = 0;
-            this._NO_TRANSLATE_LineNumberUpDown.Value = new decimal(new int[] {
+            this.LineNumberUpDown.Name = "LineNumberUpDown";
+            this.LineNumberUpDown.Size = new System.Drawing.Size(210, 23);
+            this.LineNumberUpDown.TabIndex = 0;
+            this.LineNumberUpDown.Value = new decimal(new int[] {
             1,
             0,
             0,
@@ -87,19 +88,19 @@
             // FormGoToLine
             // 
             this.AcceptButton = this.okBtn;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(237, 91);
             this.Controls.Add(this.okBtn);
             this.Controls.Add(this.cancelBtn);
-            this.Controls.Add(this._NO_TRANSLATE_LineNumberUpDown);
+            this.Controls.Add(this.LineNumberUpDown);
             this.Controls.Add(this.lineLabel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormGoToLine";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Go to line";
             this.Load += new System.EventHandler(this.FormGoToLine_Load);
-            ((System.ComponentModel.ISupportInitialize)(this._NO_TRANSLATE_LineNumberUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.LineNumberUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -108,7 +109,7 @@
         #endregion
 
         private System.Windows.Forms.Label lineLabel;
-        private System.Windows.Forms.NumericUpDown _NO_TRANSLATE_LineNumberUpDown;
+        private System.Windows.Forms.NumericUpDown LineNumberUpDown;
         private System.Windows.Forms.Button cancelBtn;
         private System.Windows.Forms.Button okBtn;
     }

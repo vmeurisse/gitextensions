@@ -19,18 +19,18 @@ namespace GitUI.Editor
 
         public int GetLineNumber()
         {
-            return (int)_NO_TRANSLATE_LineNumberUpDown.Value;
+            return (int)LineNumberUpDown.Value;
         }
 
         public void SetMaxLineNumber(int maxLineNumber)
         {
-            _NO_TRANSLATE_LineNumberUpDown.Maximum = maxLineNumber;
+            LineNumberUpDown.Maximum = maxLineNumber;
             lineLabel.Text = lineLabel.Text + " (1 - " + maxLineNumber.ToString() + "):"; 
         }
 
         private void FormGoToLine_Load(object sender, EventArgs e)
         {
-            _NO_TRANSLATE_LineNumberUpDown.Select(0, _NO_TRANSLATE_LineNumberUpDown.ToString().Length);
+            LineNumberUpDown.Select(0, LineNumberUpDown.ToString().Length);
         }
 
 

@@ -33,14 +33,14 @@
             this.okButton = new System.Windows.Forms.Button();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.logoPictureBox = new System.Windows.Forms.PictureBox();
-            this._NO_TRANSLATE_labelCopyright = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_labelVersionInfo = new System.Windows.Forms.Label();
+            this.labelCopyright = new System.Windows.Forms.Label();
+            this.labelVersionInfo = new System.Windows.Forms.Label();
             this.pictureDonate = new System.Windows.Forms.PictureBox();
-            this._NO_TRANSLATE_labelProductName = new System.Windows.Forms.Label();
+            this.labelProductName = new System.Windows.Forms.Label();
             this.textBoxDescription = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.thanksTo = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_thanksToTicker = new System.Windows.Forms.Label();
+            this.thanksToTicker = new System.Windows.Forms.Label();
             this.tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.logoPictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureDonate)).BeginInit();
@@ -69,10 +69,10 @@
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
             this.tableLayoutPanel.Controls.Add(this.logoPictureBox, 0, 0);
-            this.tableLayoutPanel.Controls.Add(this._NO_TRANSLATE_labelCopyright, 1, 2);
-            this.tableLayoutPanel.Controls.Add(this._NO_TRANSLATE_labelVersionInfo, 1, 1);
+            this.tableLayoutPanel.Controls.Add(this.labelCopyright, 1, 2);
+            this.tableLayoutPanel.Controls.Add(this.labelVersionInfo, 1, 1);
             this.tableLayoutPanel.Controls.Add(this.pictureDonate, 1, 0);
-            this.tableLayoutPanel.Controls.Add(this._NO_TRANSLATE_labelProductName, 1, 3);
+            this.tableLayoutPanel.Controls.Add(this.labelProductName, 1, 3);
             this.tableLayoutPanel.Controls.Add(this.okButton, 1, 6);
             this.tableLayoutPanel.Controls.Add(this.textBoxDescription, 1, 5);
             this.tableLayoutPanel.Controls.Add(this.tableLayoutPanel1, 1, 4);
@@ -102,30 +102,32 @@
             this.logoPictureBox.TabIndex = 12;
             this.logoPictureBox.TabStop = false;
             // 
-            // _NO_TRANSLATE_labelCopyright
+            // labelCopyright
             // 
-            this._NO_TRANSLATE_labelCopyright.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._NO_TRANSLATE_labelCopyright.Location = new System.Drawing.Point(164, 65);
-            this._NO_TRANSLATE_labelCopyright.Margin = new System.Windows.Forms.Padding(0);
-            this._NO_TRANSLATE_labelCopyright.MaximumSize = new System.Drawing.Size(0, 17);
-            this._NO_TRANSLATE_labelCopyright.Name = "_NO_TRANSLATE_labelCopyright";
-            this._NO_TRANSLATE_labelCopyright.Size = new System.Drawing.Size(384, 17);
-            this._NO_TRANSLATE_labelCopyright.TabIndex = 21;
-            this._NO_TRANSLATE_labelCopyright.Text = "Henk Westhuis (henk_westhuis@hotmail.com)";
-            this._NO_TRANSLATE_labelCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelCopyright.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SetDontTranslate(this.labelCopyright, true);
+            this.labelCopyright.Location = new System.Drawing.Point(164, 65);
+            this.labelCopyright.Margin = new System.Windows.Forms.Padding(0);
+            this.labelCopyright.MaximumSize = new System.Drawing.Size(0, 17);
+            this.labelCopyright.Name = "labelCopyright";
+            this.labelCopyright.Size = new System.Drawing.Size(384, 17);
+            this.labelCopyright.TabIndex = 21;
+            this.labelCopyright.Text = "Henk Westhuis (henk_westhuis@hotmail.com)";
+            this.labelCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // _NO_TRANSLATE_labelVersionInfo
+            // labelVersionInfo
             // 
-            this._NO_TRANSLATE_labelVersionInfo.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._NO_TRANSLATE_labelVersionInfo.Location = new System.Drawing.Point(164, 43);
-            this._NO_TRANSLATE_labelVersionInfo.Margin = new System.Windows.Forms.Padding(0);
-            this._NO_TRANSLATE_labelVersionInfo.MaximumSize = new System.Drawing.Size(0, 17);
-            this._NO_TRANSLATE_labelVersionInfo.Name = "_NO_TRANSLATE_labelVersionInfo";
-            this._NO_TRANSLATE_labelVersionInfo.Size = new System.Drawing.Size(384, 17);
-            this._NO_TRANSLATE_labelVersionInfo.TabIndex = 0;
-            this._NO_TRANSLATE_labelVersionInfo.Text = "Version ";
-            this._NO_TRANSLATE_labelVersionInfo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._NO_TRANSLATE_labelVersionInfo.Click += new System.EventHandler(this.labelVersion_Click);
+            this.labelVersionInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SetDontTranslate(this.labelVersionInfo, true);
+            this.labelVersionInfo.Location = new System.Drawing.Point(164, 43);
+            this.labelVersionInfo.Margin = new System.Windows.Forms.Padding(0);
+            this.labelVersionInfo.MaximumSize = new System.Drawing.Size(0, 17);
+            this.labelVersionInfo.Name = "labelVersionInfo";
+            this.labelVersionInfo.Size = new System.Drawing.Size(384, 17);
+            this.labelVersionInfo.TabIndex = 0;
+            this.labelVersionInfo.Text = "Version ";
+            this.labelVersionInfo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelVersionInfo.Click += new System.EventHandler(this.labelVersion_Click);
             // 
             // pictureDonate
             // 
@@ -141,17 +143,18 @@
             this.pictureDonate.TabStop = false;
             this.pictureDonate.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
-            // _NO_TRANSLATE_labelProductName
+            // labelProductName
             // 
-            this._NO_TRANSLATE_labelProductName.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._NO_TRANSLATE_labelProductName.Location = new System.Drawing.Point(164, 87);
-            this._NO_TRANSLATE_labelProductName.Margin = new System.Windows.Forms.Padding(0);
-            this._NO_TRANSLATE_labelProductName.MaximumSize = new System.Drawing.Size(0, 17);
-            this._NO_TRANSLATE_labelProductName.Name = "_NO_TRANSLATE_labelProductName";
-            this._NO_TRANSLATE_labelProductName.Size = new System.Drawing.Size(384, 17);
-            this._NO_TRANSLATE_labelProductName.TabIndex = 19;
-            this._NO_TRANSLATE_labelProductName.Text = "Git Extensions";
-            this._NO_TRANSLATE_labelProductName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelProductName.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SetDontTranslate(this.labelProductName, true);
+            this.labelProductName.Location = new System.Drawing.Point(164, 87);
+            this.labelProductName.Margin = new System.Windows.Forms.Padding(0);
+            this.labelProductName.MaximumSize = new System.Drawing.Size(0, 17);
+            this.labelProductName.Name = "labelProductName";
+            this.labelProductName.Size = new System.Drawing.Size(384, 17);
+            this.labelProductName.TabIndex = 19;
+            this.labelProductName.Text = "Git Extensions";
+            this.labelProductName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBoxDescription
             // 
@@ -173,7 +176,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 75F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.thanksTo, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this._NO_TRANSLATE_thanksToTicker, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.thanksToTicker, 1, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(164, 110);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
@@ -189,26 +192,27 @@
             this.thanksTo.Location = new System.Drawing.Point(0, 0);
             this.thanksTo.Margin = new System.Windows.Forms.Padding(0);
             this.thanksTo.Name = "thanksTo";
-            this.thanksTo.Size = new System.Drawing.Size(58, 13);
+            this.thanksTo.Size = new System.Drawing.Size(62, 15);
             this.thanksTo.TabIndex = 27;
             this.thanksTo.Text = "Thanks to:";
-            this.thanksTo.Click += new System.EventHandler(this._NO_TRANSLATE_thanksToTicker_Click);
+            this.thanksTo.Click += new System.EventHandler(this.thanksToTicker_Click);
             // 
-            // _NO_TRANSLATE_thanksToTicker
+            // thanksToTicker
             // 
-            this._NO_TRANSLATE_thanksToTicker.AutoEllipsis = true;
-            this._NO_TRANSLATE_thanksToTicker.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._NO_TRANSLATE_thanksToTicker.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._NO_TRANSLATE_thanksToTicker.Location = new System.Drawing.Point(78, 0);
-            this._NO_TRANSLATE_thanksToTicker.Name = "_NO_TRANSLATE_thanksToTicker";
-            this._NO_TRANSLATE_thanksToTicker.Size = new System.Drawing.Size(303, 21);
-            this._NO_TRANSLATE_thanksToTicker.TabIndex = 28;
-            this._NO_TRANSLATE_thanksToTicker.Click += new System.EventHandler(this._NO_TRANSLATE_thanksToTicker_Click);
+            this.thanksToTicker.AutoEllipsis = true;
+            this.thanksToTicker.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.thanksToTicker.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SetDontTranslate(this.thanksToTicker, true);
+            this.thanksToTicker.Location = new System.Drawing.Point(78, 0);
+            this.thanksToTicker.Name = "thanksToTicker";
+            this.thanksToTicker.Size = new System.Drawing.Size(303, 21);
+            this.thanksToTicker.TabIndex = 28;
+            this.thanksToTicker.Click += new System.EventHandler(this.thanksToTicker_Click);
             // 
             // AboutBox
             // 
             this.AcceptButton = this.okButton;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(548, 303);
             this.Controls.Add(this.tableLayoutPanel);
@@ -234,15 +238,15 @@
 
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel;
         private System.Windows.Forms.PictureBox logoPictureBox;
-        private System.Windows.Forms.Label _NO_TRANSLATE_labelProductName;
-        private System.Windows.Forms.Label _NO_TRANSLATE_labelVersionInfo;
+        private System.Windows.Forms.Label labelProductName;
+        private System.Windows.Forms.Label labelVersionInfo;
         private System.Windows.Forms.TextBox textBoxDescription;
         private System.Windows.Forms.Button okButton;
-        private System.Windows.Forms.Label _NO_TRANSLATE_labelCopyright;
+        private System.Windows.Forms.Label labelCopyright;
         private System.Windows.Forms.PictureBox pictureDonate;
         private System.Windows.Forms.Timer thanksTimer;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label thanksTo;
-        private System.Windows.Forms.Label _NO_TRANSLATE_thanksToTicker;
+        private System.Windows.Forms.Label thanksToTicker;
     }
 }

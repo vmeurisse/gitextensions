@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.Panel panel1;
-            this._NO_TRANSLATE_BranchName = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_Title = new System.Windows.Forms.LinkLabel();
+            this.BranchName = new System.Windows.Forms.Label();
+            this.Title = new System.Windows.Forms.LinkLabel();
             this.Icon = new System.Windows.Forms.PictureBox();
-            this._NO_TRANSLATE_Description = new System.Windows.Forms.Label();
+            this.Description = new System.Windows.Forms.Label();
             panel1 = new System.Windows.Forms.Panel();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Icon)).BeginInit();
@@ -42,8 +42,8 @@
             // 
             panel1.AutoSize = true;
             panel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            panel1.Controls.Add(this._NO_TRANSLATE_BranchName);
-            panel1.Controls.Add(this._NO_TRANSLATE_Title);
+            panel1.Controls.Add(this.BranchName);
+            panel1.Controls.Add(this.Title);
             panel1.Location = new System.Drawing.Point(28, 2);
             panel1.MinimumSize = new System.Drawing.Size(250, 15);
             panel1.Name = "panel1";
@@ -52,34 +52,36 @@
             panel1.MouseEnter += new System.EventHandler(this.DashboardItem_MouseEnter);
             panel1.MouseLeave += new System.EventHandler(this.DashboardItem_MouseLeave);
             // 
-            // _NO_TRANSLATE_BranchName
+            // BranchName
             // 
-            this._NO_TRANSLATE_BranchName.AutoSize = true;
-            this._NO_TRANSLATE_BranchName.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._NO_TRANSLATE_BranchName.Dock = System.Windows.Forms.DockStyle.Left;
-            this._NO_TRANSLATE_BranchName.Location = new System.Drawing.Point(52, 0);
-            this._NO_TRANSLATE_BranchName.Name = "_NO_TRANSLATE_BranchName";
-            this._NO_TRANSLATE_BranchName.Size = new System.Drawing.Size(58, 15);
-            this._NO_TRANSLATE_BranchName.TabIndex = 4;
-            this._NO_TRANSLATE_BranchName.Text = "##branch";
-            this._NO_TRANSLATE_BranchName.Click += new System.EventHandler(this.Title_Click);
-            this._NO_TRANSLATE_BranchName.MouseEnter += new System.EventHandler(this.DashboardItem_MouseEnter);
-            this._NO_TRANSLATE_BranchName.MouseLeave += new System.EventHandler(this.DashboardItem_MouseLeave);
+            this.BranchName.AutoSize = true;
+            this.BranchName.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.BranchName.Dock = System.Windows.Forms.DockStyle.Left;
+            this.SetDontTranslate(this.BranchName, true);
+            this.BranchName.Location = new System.Drawing.Point(52, 0);
+            this.BranchName.Name = "BranchName";
+            this.BranchName.Size = new System.Drawing.Size(58, 15);
+            this.BranchName.TabIndex = 4;
+            this.BranchName.Text = "##branch";
+            this.BranchName.Click += new System.EventHandler(this.Title_Click);
+            this.BranchName.MouseEnter += new System.EventHandler(this.DashboardItem_MouseEnter);
+            this.BranchName.MouseLeave += new System.EventHandler(this.DashboardItem_MouseLeave);
             // 
-            // _NO_TRANSLATE_Title
+            // Title
             // 
-            this._NO_TRANSLATE_Title.AutoEllipsis = true;
-            this._NO_TRANSLATE_Title.AutoSize = true;
-            this._NO_TRANSLATE_Title.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._NO_TRANSLATE_Title.Dock = System.Windows.Forms.DockStyle.Left;
-            this._NO_TRANSLATE_Title.Location = new System.Drawing.Point(0, 0);
-            this._NO_TRANSLATE_Title.Name = "_NO_TRANSLATE_Title";
-            this._NO_TRANSLATE_Title.Size = new System.Drawing.Size(52, 15);
-            this._NO_TRANSLATE_Title.TabIndex = 1;
-            this._NO_TRANSLATE_Title.TabStop = true;
-            this._NO_TRANSLATE_Title.Text = "##label1";
-            this._NO_TRANSLATE_Title.MouseEnter += new System.EventHandler(this.DashboardItem_MouseEnter);
-            this._NO_TRANSLATE_Title.MouseLeave += new System.EventHandler(this.DashboardItem_MouseLeave);
+            this.Title.AutoEllipsis = true;
+            this.Title.AutoSize = true;
+            this.Title.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.Title.Dock = System.Windows.Forms.DockStyle.Left;
+            this.SetDontTranslate(this.Title, true);
+            this.Title.Location = new System.Drawing.Point(0, 0);
+            this.Title.Name = "Title";
+            this.Title.Size = new System.Drawing.Size(52, 15);
+            this.Title.TabIndex = 1;
+            this.Title.TabStop = true;
+            this.Title.Text = "##label1";
+            this.Title.MouseEnter += new System.EventHandler(this.DashboardItem_MouseEnter);
+            this.Title.MouseLeave += new System.EventHandler(this.DashboardItem_MouseLeave);
             // 
             // Icon
             // 
@@ -93,17 +95,18 @@
             this.Icon.MouseEnter += new System.EventHandler(this.DashboardItem_MouseEnter);
             this.Icon.MouseLeave += new System.EventHandler(this.DashboardItem_MouseLeave);
             // 
-            // _NO_TRANSLATE_Description
+            // Description
             // 
-            this._NO_TRANSLATE_Description.AutoSize = true;
-            this._NO_TRANSLATE_Description.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._NO_TRANSLATE_Description.Location = new System.Drawing.Point(29, 25);
-            this._NO_TRANSLATE_Description.Name = "_NO_TRANSLATE_Description";
-            this._NO_TRANSLATE_Description.Size = new System.Drawing.Size(40, 15);
-            this._NO_TRANSLATE_Description.TabIndex = 3;
-            this._NO_TRANSLATE_Description.Text = "##text";
-            this._NO_TRANSLATE_Description.MouseEnter += new System.EventHandler(this.DashboardItem_MouseEnter);
-            this._NO_TRANSLATE_Description.MouseLeave += new System.EventHandler(this.DashboardItem_MouseLeave);
+            this.Description.AutoSize = true;
+            this.Description.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.SetDontTranslate(this.Description, true);
+            this.Description.Location = new System.Drawing.Point(29, 25);
+            this.Description.Name = "Description";
+            this.Description.Size = new System.Drawing.Size(40, 15);
+            this.Description.TabIndex = 3;
+            this.Description.Text = "##text";
+            this.Description.MouseEnter += new System.EventHandler(this.DashboardItem_MouseEnter);
+            this.Description.MouseLeave += new System.EventHandler(this.DashboardItem_MouseLeave);
             // 
             // DashboardItem
             // 
@@ -112,7 +115,7 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.Controls.Add(panel1);
-            this.Controls.Add(this._NO_TRANSLATE_Description);
+            this.Controls.Add(this.Description);
             this.Controls.Add(this.Icon);
             this.Cursor = System.Windows.Forms.Cursors.Hand;
             this.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -132,8 +135,8 @@
         #endregion
 
         private System.Windows.Forms.PictureBox Icon;
-        private System.Windows.Forms.LinkLabel _NO_TRANSLATE_Title;
-        private System.Windows.Forms.Label _NO_TRANSLATE_Description;
-        private System.Windows.Forms.Label _NO_TRANSLATE_BranchName;
+        private System.Windows.Forms.LinkLabel Title;
+        private System.Windows.Forms.Label Description;
+        private System.Windows.Forms.Label BranchName;
     }
 }

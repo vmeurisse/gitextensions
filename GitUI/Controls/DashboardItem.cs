@@ -50,16 +50,16 @@ namespace GitUI
 
         private void Initialize(Bitmap icon, string path, string title, string text, string branchName)
         {
-            _NO_TRANSLATE_Title.Text = title;
-            _NO_TRANSLATE_Title.AutoEllipsis = true;
+            Title.Text = title;
+            Title.AutoEllipsis = true;
 
             Path = path;
 
-            if (string.IsNullOrEmpty(_NO_TRANSLATE_Title.Text))
-                _NO_TRANSLATE_Title.Text = Path;
+            if (string.IsNullOrEmpty(Title.Text))
+                Title.Text = Path;
 
-            _NO_TRANSLATE_Description.Visible = !string.IsNullOrEmpty(text);
-            _NO_TRANSLATE_Description.Text = text;
+            Description.Visible = !string.IsNullOrEmpty(text);
+            Description.Text = text;
 
             //if (Description.Visible)
             //{
@@ -68,14 +68,14 @@ namespace GitUI
             //    Description.Height = ((int)size.Height) * lines;
             //}
 
-            _NO_TRANSLATE_BranchName.Visible = !string.IsNullOrEmpty(branchName);
-            _NO_TRANSLATE_BranchName.Text = branchName;
+            BranchName.Visible = !string.IsNullOrEmpty(branchName);
+            BranchName.Text = branchName;
 
-            Height = _NO_TRANSLATE_Title.Height + 6;
-            if (_NO_TRANSLATE_Description.Visible)
+            Height = Title.Height + 6;
+            if (Description.Visible)
             {
-                _NO_TRANSLATE_Description.Top = _NO_TRANSLATE_Title.Height + 4;
-                Height += _NO_TRANSLATE_Description.Height + 2;
+                Description.Top = Title.Height + 4;
+                Height += Description.Height + 2;
             }
 
 
@@ -92,11 +92,11 @@ namespace GitUI
                                   UseAnimation = false,
                                   ReshowDelay = 1
                               };
-            toolTip.SetToolTip(_NO_TRANSLATE_Title, Path);
+            toolTip.SetToolTip(Title, Path);
 
-            _NO_TRANSLATE_Title.MouseDown += Title_MouseDown;
-            _NO_TRANSLATE_Title.Click += Title_Click;
-            _NO_TRANSLATE_Description.Click += Title_Click;
+            Title.MouseDown += Title_MouseDown;
+            Title.Click += Title_Click;
+            Description.Click += Title_Click;
             Icon.Click += Title_Click;
         }
 
@@ -118,8 +118,8 @@ namespace GitUI
 
         private void DashboardItem_SizeChanged(object sender, EventArgs e)
         {
-            _NO_TRANSLATE_Title.Width = Width - _NO_TRANSLATE_Title.Location.X;
-            _NO_TRANSLATE_Description.Width = Width - _NO_TRANSLATE_Title.Location.X;
+            Title.Width = Width - Title.Location.X;
+            Description.Width = Width - Title.Location.X;
         }
 
         private void DashboardItem_MouseEnter(object sender, EventArgs e)

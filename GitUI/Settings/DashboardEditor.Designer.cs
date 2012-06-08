@@ -33,7 +33,7 @@ namespace GitUI
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DashboardEditor));
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this._NO_TRANSLATE_Categories = new System.Windows.Forms.ListBox();
+            this.Categories = new System.Windows.Forms.ListBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.Remove = new System.Windows.Forms.Button();
             this.Add = new System.Windows.Forms.Button();
@@ -44,11 +44,11 @@ namespace GitUI
             this.descriptionDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.repositoryBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.RepositoriesType = new System.Windows.Forms.RadioButton();
-            this._NO_TRANSLATE_RssFeed = new System.Windows.Forms.TextBox();
+            this.RssFeed = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.RssFeedType = new System.Windows.Forms.RadioButton();
             this.label2 = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_Caption = new System.Windows.Forms.TextBox();
+            this.Caption = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
@@ -65,7 +65,7 @@ namespace GitUI
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this._NO_TRANSLATE_Categories);
+            this.splitContainer2.Panel1.Controls.Add(this.Categories);
             this.splitContainer2.Panel1.Controls.Add(this.panel1);
             this.splitContainer2.Panel1.Controls.Add(this.CategoriesLabel);
             // 
@@ -73,20 +73,21 @@ namespace GitUI
             // 
             this.splitContainer2.Panel2.Controls.Add(this.RepositoriesGrid);
             this.splitContainer2.Panel2.Controls.Add(this.RepositoriesType);
-            this.splitContainer2.Panel2.Controls.Add(this._NO_TRANSLATE_RssFeed);
+            this.splitContainer2.Panel2.Controls.Add(this.RssFeed);
             this.splitContainer2.Panel2.Controls.Add(this.label3);
             this.splitContainer2.Panel2.Controls.Add(this.RssFeedType);
             this.splitContainer2.Panel2.Controls.Add(this.label2);
-            this.splitContainer2.Panel2.Controls.Add(this._NO_TRANSLATE_Caption);
+            this.splitContainer2.Panel2.Controls.Add(this.Caption);
             this.splitContainer2.Panel2.Controls.Add(this.label1);
             resources.ApplyResources(this.splitContainer2.Panel2, "splitContainer2.Panel2");
             // 
-            // _NO_TRANSLATE_Categories
+            // Categories
             // 
-            resources.ApplyResources(this._NO_TRANSLATE_Categories, "_NO_TRANSLATE_Categories");
-            this._NO_TRANSLATE_Categories.FormattingEnabled = true;
-            this._NO_TRANSLATE_Categories.Name = "_NO_TRANSLATE_Categories";
-            this._NO_TRANSLATE_Categories.SelectedIndexChanged += new System.EventHandler(this.Categories_SelectedIndexChanged);
+            resources.ApplyResources(this.Categories, "Categories");
+            this.SetDontTranslate(this.Categories, true);
+            this.Categories.FormattingEnabled = true;
+            this.Categories.Name = "Categories";
+            this.Categories.SelectedIndexChanged += new System.EventHandler(this.Categories_SelectedIndexChanged);
             // 
             // panel1
             // 
@@ -162,12 +163,13 @@ namespace GitUI
             this.RepositoriesType.UseVisualStyleBackColor = true;
             this.RepositoriesType.Validating += new System.ComponentModel.CancelEventHandler(this.RepositoriesType_Validating);
             // 
-            // _NO_TRANSLATE_RssFeed
+            // RssFeed
             // 
-            resources.ApplyResources(this._NO_TRANSLATE_RssFeed, "_NO_TRANSLATE_RssFeed");
-            this._NO_TRANSLATE_RssFeed.Name = "_NO_TRANSLATE_RssFeed";
-            this._NO_TRANSLATE_RssFeed.TextChanged += new System.EventHandler(this.RssFeed_TextChanged);
-            this._NO_TRANSLATE_RssFeed.Validating += new System.ComponentModel.CancelEventHandler(this.RssFeed_Validating);
+            resources.ApplyResources(this.RssFeed, "RssFeed");
+            this.SetDontTranslate(this.RssFeed, true);
+            this.RssFeed.Name = "RssFeed";
+            this.RssFeed.TextChanged += new System.EventHandler(this.RssFeed_TextChanged);
+            this.RssFeed.Validating += new System.ComponentModel.CancelEventHandler(this.RssFeed_Validating);
             // 
             // label3
             // 
@@ -187,12 +189,13 @@ namespace GitUI
             resources.ApplyResources(this.label2, "label2");
             this.label2.Name = "label2";
             // 
-            // _NO_TRANSLATE_Caption
+            // Caption
             // 
-            resources.ApplyResources(this._NO_TRANSLATE_Caption, "_NO_TRANSLATE_Caption");
-            this._NO_TRANSLATE_Caption.Name = "_NO_TRANSLATE_Caption";
-            this._NO_TRANSLATE_Caption.TextChanged += new System.EventHandler(this.Caption_TextChanged);
-            this._NO_TRANSLATE_Caption.Validating += new System.ComponentModel.CancelEventHandler(this.Caption_Validating);
+            resources.ApplyResources(this.Caption, "Caption");
+            this.SetDontTranslate(this.Caption, true);
+            this.Caption.Name = "Caption";
+            this.Caption.TextChanged += new System.EventHandler(this.Caption_TextChanged);
+            this.Caption.Validating += new System.ComponentModel.CancelEventHandler(this.Caption_Validating);
             // 
             // label1
             // 
@@ -219,15 +222,15 @@ namespace GitUI
         #endregion
 
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.ListBox _NO_TRANSLATE_Categories;
+        private System.Windows.Forms.ListBox Categories;
         private System.Windows.Forms.Label CategoriesLabel;
         private System.Windows.Forms.DataGridView RepositoriesGrid;
         private System.Windows.Forms.BindingSource repositoryBindingSource;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox _NO_TRANSLATE_Caption;
+        private System.Windows.Forms.TextBox Caption;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox _NO_TRANSLATE_RssFeed;
+        private System.Windows.Forms.TextBox RssFeed;
         private System.Windows.Forms.RadioButton RssFeedType;
         private System.Windows.Forms.RadioButton RepositoriesType;
         private System.Windows.Forms.DataGridViewTextBoxColumn pathDataGridViewTextBoxColumn;

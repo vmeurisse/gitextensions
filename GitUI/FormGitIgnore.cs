@@ -68,7 +68,7 @@ namespace GitUI
             Translate();
 
             LoadGitIgnore();
-            _NO_TRANSLATE_GitIgnoreEdit.TextLoaded += GitIgnoreFileLoaded;
+            GitIgnoreEdit.TextLoaded += GitIgnoreFileLoaded;
         }
 
         private void LoadGitIgnore()
@@ -76,7 +76,7 @@ namespace GitUI
             try
             {
                 if (File.Exists(Settings.WorkingDir + ".gitignore"))
-                    _NO_TRANSLATE_GitIgnoreEdit.ViewFile(Settings.WorkingDir + ".gitignore");
+                    GitIgnoreEdit.ViewFile(Settings.WorkingDir + ".gitignore");
             }
             catch (Exception ex)
             {
@@ -101,7 +101,7 @@ namespace GitUI
                         Settings.WorkingDir + ".gitignore",
                         x =>
                         {
-                            var fileContent = _NO_TRANSLATE_GitIgnoreEdit.GetText();
+                            var fileContent = GitIgnoreEdit.GetText();
                             if (!fileContent.EndsWith(Environment.NewLine))
                                 fileContent += Environment.NewLine;
                             File.WriteAllBytes(x, Settings.SystemEncoding.GetBytes(fileContent));
@@ -153,7 +153,7 @@ namespace GitUI
         {
 			var defaultIgnorePatterns = (File.Exists(DefaultIgnorePatternsFile)) ? File.ReadAllLines(DefaultIgnorePatternsFile) : DefaultIgnorePatterns;
 			
-            var currentFileContent = _NO_TRANSLATE_GitIgnoreEdit.GetText();
+            var currentFileContent = GitIgnoreEdit.GetText();
             var patternsToAdd = defaultIgnorePatterns
                 .Except(currentFileContent.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
                 .ToArray();
@@ -161,11 +161,11 @@ namespace GitUI
                 return;
             // workaround to prevent GitIgnoreFileLoaded event handling (it causes wrong _originalGitIgnoreFileContent update)
             // TODO: implement in FileViewer separate events for loading text from file and for setting text directly via ViewText
-            _NO_TRANSLATE_GitIgnoreEdit.TextLoaded -= GitIgnoreFileLoaded;
-            _NO_TRANSLATE_GitIgnoreEdit.ViewText(".gitignore",
+            GitIgnoreEdit.TextLoaded -= GitIgnoreFileLoaded;
+            GitIgnoreEdit.ViewText(".gitignore",
                 currentFileContent + Environment.NewLine +
                 string.Join(Environment.NewLine, patternsToAdd) + Environment.NewLine + string.Empty);
-            _NO_TRANSLATE_GitIgnoreEdit.TextLoaded += GitIgnoreFileLoaded;
+            GitIgnoreEdit.TextLoaded += GitIgnoreFileLoaded;
         }
 
         private void AddPattern_Click(object sender, EventArgs e)
@@ -177,12 +177,12 @@ namespace GitUI
 
         private bool HasUnsavedChanges()
         {
-            return _originalGitIgnoreFileContent != _NO_TRANSLATE_GitIgnoreEdit.GetText();
+            return _originalGitIgnoreFileContent != GitIgnoreEdit.GetText();
         }
 
         private void GitIgnoreFileLoaded(object sender, EventArgs e)
         {
-            _originalGitIgnoreFileContent = _NO_TRANSLATE_GitIgnoreEdit.GetText();
+            _originalGitIgnoreFileContent = GitIgnoreEdit.GetText();
         }
 
         private void lnkGitIgnorePatterns_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

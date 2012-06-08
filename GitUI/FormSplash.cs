@@ -44,7 +44,7 @@ namespace GitUI
             InitializeComponent();
 
             SetFont();
-            _NO_TRANSLATE_programTitle.Font = new Font(SystemFonts.MessageBoxFont, FontStyle.Bold);
+            programTitle.Font = new Font(SystemFonts.MessageBoxFont, FontStyle.Bold);
 
             var image = Lemmings.GetPictureBoxImage(DateTime.Now);
             pictureBox1.Image = image ?? Properties.Resources.git_extensions_logo_final_128;
@@ -57,21 +57,21 @@ namespace GitUI
 
         private void SetActionText(string action)
         {
-            _NO_TRANSLATE_actionLabel.Text = action;
+            actionLabel.Text = action;
         }
 
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
 
-            _NO_TRANSLATE_versionLabel.Text = string.Format(_version.Text, Settings.GitExtensionsVersionString);
+            versionLabel.Text = string.Format(_version.Text, Settings.GitExtensionsVersionString);
 
             if (Settings.RunningOnUnix())
-                _NO_TRANSLATE_osLabel.Text = "Unix";
+                osLabel.Text = "Unix";
             if (Settings.RunningOnMacOSX())
-                _NO_TRANSLATE_osLabel.Text = "MacOSX";
+                osLabel.Text = "MacOSX";
             if (Settings.RunningOnWindows())
-                _NO_TRANSLATE_osLabel.Text = "Windows";
+                osLabel.Text = "Windows";
         }
     }
 }

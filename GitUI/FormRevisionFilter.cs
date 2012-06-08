@@ -11,7 +11,7 @@ namespace GitUI
             Translate();
 
             LimitCheck.Checked = Settings.MaxRevisionGraphCommits > 0;
-            _NO_TRANSLATE_Limit.Value = Settings.MaxRevisionGraphCommits;
+            Limit.Value = Settings.MaxRevisionGraphCommits;
         }
 
         private void FormRevisionFilterLoad(object sender, EventArgs e)
@@ -43,7 +43,7 @@ namespace GitUI
             Author.Enabled = AuthorCheck.Checked;
             Committer.Enabled = CommitterCheck.Checked;
             Message.Enabled = MessageCheck.Checked;
-            _NO_TRANSLATE_Limit.Enabled = LimitCheck.Checked;
+            Limit.Enabled = LimitCheck.Checked;
             FileFilter.Enabled = FileFilterCheck.Checked;
 
             BranchFilterCheck.Checked = Settings.BranchFilterEnabled;
@@ -79,8 +79,8 @@ namespace GitUI
                 filter += string.Format(" --since=\"{0}\"", Since.Value.ToString("yyyy-MM-dd hh:mm:ss"));
             if (CheckUntil.Checked)
                 filter += string.Format(" --until=\"{0}\"", Until.Value.ToString("yyyy-MM-dd hh:mm:ss"));
-            if (LimitCheck.Checked && _NO_TRANSLATE_Limit.Value > 0)
-                filter += string.Format(" --max-count=\"{0}\"", (int)_NO_TRANSLATE_Limit.Value);
+            if (LimitCheck.Checked && Limit.Value > 0)
+                filter += string.Format(" --max-count=\"{0}\"", (int)Limit.Value);
             if (FileFilterCheck.Checked)
                 filter += string.Format(" -- \"{0}\"", FileFilter.Text.Replace('\\', '/'));
 
@@ -134,7 +134,7 @@ namespace GitUI
 
         public void SetLimit(int limit)
         {
-            _NO_TRANSLATE_Limit.Value = limit;
+            Limit.Value = limit;
         }
         private void OkClick(object sender, EventArgs e)
         {

@@ -33,7 +33,7 @@ namespace GitUI
             Translate();
 
             LoadFile();
-            _NO_TRANSLATE_MailMapText.TextLoaded += MailMapFileLoaded;
+            MailMapText.TextLoaded += MailMapFileLoaded;
         }
 
         private void LoadFile()
@@ -42,7 +42,7 @@ namespace GitUI
             {
                 if (File.Exists(Settings.WorkingDir + ".mailmap"))
                 {
-                    _NO_TRANSLATE_MailMapText.ViewFile(Settings.WorkingDir + ".mailmap");
+                    MailMapText.ViewFile(Settings.WorkingDir + ".mailmap");
                 }
             }
             catch (Exception ex)
@@ -66,7 +66,7 @@ namespace GitUI
                         Settings.WorkingDir + ".mailmap",
                         x =>
                         {
-                            this.MailMapFile = _NO_TRANSLATE_MailMapText.GetText();
+                            this.MailMapFile = MailMapText.GetText();
                             if (!this.MailMapFile.EndsWith(Environment.NewLine))
                                 this.MailMapFile += Environment.NewLine;
 
@@ -120,12 +120,12 @@ namespace GitUI
 
         private bool IsFileUpToDate()
         {
-            return MailMapFile == _NO_TRANSLATE_MailMapText.GetText();
+            return MailMapFile == MailMapText.GetText();
         }
 
         private void MailMapFileLoaded(object sender, EventArgs e)
         {
-            MailMapFile = _NO_TRANSLATE_MailMapText.GetText();
+            MailMapFile = MailMapText.GetText();
         }
     }
 }

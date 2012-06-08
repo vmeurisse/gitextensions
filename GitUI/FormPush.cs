@@ -70,7 +70,7 @@ namespace GitUI
 
             _currentBranch = Settings.Module.GetSelectedBranch();
 
-            _NO_TRANSLATE_Remotes.DataSource = Settings.Module.GetRemotes();
+            Remotes.DataSource = Settings.Module.GetRemotes();
 
             UpdateBranchDropDown();
             UpdateRemoteBranchDropDown();
@@ -78,14 +78,14 @@ namespace GitUI
             Push.Focus();
 
             _currentBranchRemote = Settings.Module.GetSetting(string.Format("branch.{0}.remote", _currentBranch));
-            if (_currentBranchRemote.IsNullOrEmpty() && _NO_TRANSLATE_Remotes.Items.Count >= 2)
+            if (_currentBranchRemote.IsNullOrEmpty() && Remotes.Items.Count >= 2)
             {
-                IList<string> remotes = (IList<string>)_NO_TRANSLATE_Remotes.DataSource;
+                IList<string> remotes = (IList<string>)Remotes.DataSource;
                 int i = remotes.IndexOf("origin");
-                _NO_TRANSLATE_Remotes.SelectedIndex = i >= 0 ? i : 0;
+                Remotes.SelectedIndex = i >= 0 ? i : 0;
             }
             else
-                _NO_TRANSLATE_Remotes.Text = _currentBranchRemote;
+                Remotes.Text = _currentBranchRemote;
             RemotesUpdated(null, null);
         }
 
@@ -120,7 +120,7 @@ namespace GitUI
                 MessageBox.Show(owner, _selectDestinationDirectory.Text);
                 return false;
             }
-            if (PullFromRemote.Checked && string.IsNullOrEmpty(_NO_TRANSLATE_Remotes.Text))
+            if (PullFromRemote.Checked && string.IsNullOrEmpty(Remotes.Text))
             {
                 MessageBox.Show(owner, _selectRemote.Text);
                 return false;
@@ -140,7 +140,7 @@ namespace GitUI
             if (TabControlTagBranch.SelectedTab == BranchTab && PullFromRemote.Checked)
             {
                 //The current branch is not known by the remote (as far as we now since we are disconnected....)
-                if (!Settings.Module.GetHeads(true, true).Exists(x => x.Remote == _NO_TRANSLATE_Remotes.Text && x.LocalName == RemoteBranch.Text))
+                if (!Settings.Module.GetHeads(true, true).Exists(x => x.Remote == Remotes.Text && x.LocalName == RemoteBranch.Text))
                     //Ask if this is what the user wants
                     if (MessageBox.Show(owner, _branchNewForRemote.Text, _pushCaption.Text, MessageBoxButtons.YesNo) ==
                         DialogResult.No)
@@ -171,11 +171,11 @@ namespace GitUI
                     if (!File.Exists(Settings.Pageant))
                         MessageBox.Show(owner, _cannotLoadPutty.Text, PuttyText);
                     else
-                        Settings.Module.StartPageantForRemote(_NO_TRANSLATE_Remotes.Text);
+                        Settings.Module.StartPageantForRemote(Remotes.Text);
                 }
 
-                destination = _NO_TRANSLATE_Remotes.Text;
-                remote = _NO_TRANSLATE_Remotes.Text.Trim();
+                destination = Remotes.Text;
+                remote = Remotes.Text.Trim();
             }
 
             string pushCmd;
@@ -185,14 +185,14 @@ namespace GitUI
                 if (!track)
                 {
                     track = newBranch;
-                    string[] remotes = _NO_TRANSLATE_Remotes.DataSource as string[];
+                    string[] remotes = Remotes.DataSource as string[];
                     if (remotes != null)
                         foreach (string remoteBranch in remotes)
-                            if (!string.IsNullOrEmpty(remoteBranch) && _NO_TRANSLATE_Branch.Text.StartsWith(remoteBranch))
+                            if (!string.IsNullOrEmpty(remoteBranch) && Branch.Text.StartsWith(remoteBranch))
                                 track = false;
                 }
 
-                pushCmd = GitCommandHelpers.PushCmd(destination, _NO_TRANSLATE_Branch.Text, RemoteBranch.Text,
+                pushCmd = GitCommandHelpers.PushCmd(destination, Branch.Text, RemoteBranch.Text,
                     PushAllBranches.Checked, ForcePushBranches.Checked, track, RecursiveSubmodulesCheck.Checked);
             }
             else if (TabControlTagBranch.SelectedTab == TagTab)
@@ -220,8 +220,8 @@ namespace GitUI
 
             //controls can be accessed only from UI thread
             candidateForRebasingMergeCommit = Settings.PullMerge == "rebase" && PullFromRemote.Checked && !PushAllBranches.Checked && TabControlTagBranch.SelectedTab == BranchTab;
-            selectedBranch = _NO_TRANSLATE_Branch.Text;
-            selectedBranchRemote = _NO_TRANSLATE_Remotes.Text;
+            selectedBranch = Branch.Text;
+            selectedBranchRemote = Remotes.Text;
             selectedRemoteBranchName = RemoteBranch.Text;
 
             var form = new FormRemoteProcess(pushCmd)
@@ -299,11 +299,11 @@ namespace GitUI
 
         private void UpdateBranchDropDown()
         {
-            var curBranch = _NO_TRANSLATE_Branch.Text;
+            var curBranch = Branch.Text;
 
-            _NO_TRANSLATE_Branch.DisplayMember = "Name";
-            _NO_TRANSLATE_Branch.Items.Clear();
-            _NO_TRANSLATE_Branch.Items.Add(HeadText);
+            Branch.DisplayMember = "Name";
+            Branch.Items.Clear();
+            Branch.Items.Add(HeadText);
 
             if (string.IsNullOrEmpty(curBranch))
             {
@@ -313,9 +313,9 @@ namespace GitUI
             }
 
             foreach (var head in Settings.Module.GetHeads(false, true))
-                _NO_TRANSLATE_Branch.Items.Add(head);
+                Branch.Items.Add(head);
 
-            _NO_TRANSLATE_Branch.Text = curBranch;
+            Branch.Text = curBranch;
         }
 
         private void PullClick(object sender, EventArgs e)
@@ -328,8 +328,8 @@ namespace GitUI
             RemoteBranch.DisplayMember = "Name";
             RemoteBranch.Items.Clear();
 
-            if (!string.IsNullOrEmpty(_NO_TRANSLATE_Branch.Text))
-                RemoteBranch.Items.Add(_NO_TRANSLATE_Branch.Text);
+            if (!string.IsNullOrEmpty(Branch.Text))
+                RemoteBranch.Items.Add(Branch.Text);
 
             foreach (var head in Settings.Module.GetHeads(false, true))
                 if (!RemoteBranch.Items.Contains(head))
@@ -338,12 +338,12 @@ namespace GitUI
 
         private void BranchSelectedValueChanged(object sender, EventArgs e)
         {
-            if (_NO_TRANSLATE_Branch.Text != HeadText)
+            if (Branch.Text != HeadText)
             {
                 if (PullFromRemote.Checked)
                 {
-                    var branch = _NO_TRANSLATE_Branch.SelectedItem as GitHead;
-                    if (branch != null && branch.TrackingRemote.Equals(_NO_TRANSLATE_Remotes.Text.Trim()))
+                    var branch = Branch.SelectedItem as GitHead;
+                    if (branch != null && branch.TrackingRemote.Equals(Remotes.Text.Trim()))
                     {
                         RemoteBranch.Text = branch.MergeWith;
                         if (!string.IsNullOrEmpty(RemoteBranch.Text))
@@ -351,7 +351,7 @@ namespace GitUI
                     }
                 }
 
-                RemoteBranch.Text = _NO_TRANSLATE_Branch.Text;
+                RemoteBranch.Text = Branch.Text;
             }
         }
 
@@ -359,7 +359,7 @@ namespace GitUI
         {
             RestorePosition("push");
 
-            _NO_TRANSLATE_Remotes.Select();
+            Remotes.Select();
 
             Text = string.Concat(_pushCaption.Text, " (", Settings.WorkingDir, ")");
 
@@ -370,7 +370,7 @@ namespace GitUI
         private void AddRemoteClick(object sender, EventArgs e)
         {
             GitUICommands.Instance.StartRemotesDialog(this);
-            _NO_TRANSLATE_Remotes.DataSource = Settings.Module.GetRemotes();
+            Remotes.DataSource = Settings.Module.GetRemotes();
         }
 
         private void PullFromRemoteCheckedChanged(object sender, EventArgs e)
@@ -381,7 +381,7 @@ namespace GitUI
 
             PushDestination.Enabled = false;
             BrowseSource.Enabled = false;
-            _NO_TRANSLATE_Remotes.Enabled = true;
+            Remotes.Enabled = true;
             AddRemote.Enabled = true;
         }
 
@@ -392,7 +392,7 @@ namespace GitUI
 
             PushDestination.Enabled = true;
             BrowseSource.Enabled = true;
-            _NO_TRANSLATE_Remotes.Enabled = false;
+            Remotes.Enabled = false;
             AddRemote.Enabled = false;
 
             FillPushDestinationDropDown();
@@ -405,7 +405,7 @@ namespace GitUI
 
             EnableLoadSshButton();
 
-            var pushSettingValue = Settings.Module.GetSetting(string.Format("remote.{0}.push", _NO_TRANSLATE_Remotes.Text));
+            var pushSettingValue = Settings.Module.GetSetting(string.Format("remote.{0}.push", Remotes.Text));
 
             if (PullFromRemote.Checked && !string.IsNullOrEmpty(pushSettingValue))
             {
@@ -413,9 +413,9 @@ namespace GitUI
                 RemoteBranch.Text = "";
                 if (values.Length > 0)
                 {
-                    var currentBranch = new GitHead(null, values[0], _NO_TRANSLATE_Remotes.Text);
-                    _NO_TRANSLATE_Branch.Items.Add(currentBranch);
-                    _NO_TRANSLATE_Branch.SelectedItem = currentBranch;
+                    var currentBranch = new GitHead(null, values[0], Remotes.Text);
+                    Branch.Items.Add(currentBranch);
+                    Branch.SelectedItem = currentBranch;
                 }
                 if (values.Length > 1)
                     RemoteBranch.Text = values[1];
@@ -423,14 +423,14 @@ namespace GitUI
                 return;
             }
 
-            if (string.IsNullOrEmpty(_NO_TRANSLATE_Branch.Text))
+            if (string.IsNullOrEmpty(Branch.Text))
             {
                 // Doing this makes it pretty easy to accidentally create a branch on the remote.
                 // But leaving it blank will do the 'default' thing, meaning all branches are pushed.
                 // Solution: when pushing a branch that doesn't exist on the remote, ask what to do
-                var currentBranch = new GitHead(null, _currentBranch, _NO_TRANSLATE_Remotes.Text);
-                _NO_TRANSLATE_Branch.Items.Add(currentBranch);
-                _NO_TRANSLATE_Branch.SelectedItem = currentBranch;
+                var currentBranch = new GitHead(null, _currentBranch, Remotes.Text);
+                Branch.Items.Add(currentBranch);
+                Branch.SelectedItem = currentBranch;
                 return;
             }
 
@@ -439,7 +439,7 @@ namespace GitUI
 
         private void EnableLoadSshButton()
         {
-            LoadSSHKey.Visible = !string.IsNullOrEmpty(Settings.Module.GetPuttyKeyFileForRemote(_NO_TRANSLATE_Remotes.Text));
+            LoadSSHKey.Visible = !string.IsNullOrEmpty(Settings.Module.GetPuttyKeyFileForRemote(Remotes.Text));
         }
 
         private void LoadSshKeyClick(object sender, EventArgs e)
@@ -447,7 +447,7 @@ namespace GitUI
             if (!File.Exists(Settings.Pageant))
                 MessageBox.Show(this, _cannotLoadPutty.Text, PuttyText);
             else
-                Settings.Module.StartPageantForRemote(_NO_TRANSLATE_Remotes.Text);
+                Settings.Module.StartPageantForRemote(Remotes.Text);
         }
 
         private void RemotesValidated(object sender, EventArgs e)
@@ -474,7 +474,7 @@ namespace GitUI
 
         private void PushAllBranchesCheckedChanged(object sender, EventArgs e)
         {
-            _NO_TRANSLATE_Branch.Enabled = !PushAllBranches.Checked;
+            Branch.Enabled = !PushAllBranches.Checked;
             RemoteBranch.Enabled = !PushAllBranches.Checked;
         }
 
@@ -495,7 +495,7 @@ namespace GitUI
             var bs = new BindingSource {DataSource = _branchTable};
             BranchGrid.DataSource = bs;
 
-            string remote = _NO_TRANSLATE_Remotes.Text.Trim();
+            string remote = Remotes.Text.Trim();
             if (remote == "")
                 return;
 

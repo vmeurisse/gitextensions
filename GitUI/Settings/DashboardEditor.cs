@@ -17,10 +17,10 @@ namespace GitUI
 
         protected override void OnHandleDestroyed(EventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
             repositoryCategory.SetIcon();
         }
 
@@ -29,15 +29,15 @@ namespace GitUI
         public void Initialize()
         {
             bChangingDataSource = true;
-            _NO_TRANSLATE_Categories.DataSource = null;
-            _NO_TRANSLATE_Categories.DataSource = Repositories.RepositoryCategories;
+            Categories.DataSource = null;
+            Categories.DataSource = Repositories.RepositoryCategories;
             bChangingDataSource = false;
-            _NO_TRANSLATE_Categories.DisplayMember = "Description";
+            Categories.DisplayMember = "Description";
         }
 
         private void Categories_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
             {
                 if (!bChangingDataSource)
                     splitContainer2.Panel2.Enabled = false;
@@ -46,13 +46,13 @@ namespace GitUI
 
             if (!bChangingDataSource)
                 splitContainer2.Panel2.Enabled = true;
-            var repositoryCategory = (RepositoryCategory)_NO_TRANSLATE_Categories.SelectedItem;
+            var repositoryCategory = (RepositoryCategory)Categories.SelectedItem;
             RepositoriesGrid.DataSource = repositoryCategory.Repositories;
 
-            _NO_TRANSLATE_Caption.Text = repositoryCategory.Description;
+            Caption.Text = repositoryCategory.Description;
             RssFeedType.Checked = repositoryCategory.CategoryType == RepositoryCategoryType.RssFeed;
             RepositoriesType.Checked = !RssFeedType.Checked;
-            _NO_TRANSLATE_RssFeed.Text = repositoryCategory.RssFeedUrl;
+            RssFeed.Text = repositoryCategory.RssFeedUrl;
 
             RssFeedType_CheckedChanged(this, null);
         }
@@ -66,29 +66,29 @@ namespace GitUI
 
         private void Remove_Click(object sender, EventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            Repositories.RepositoryCategories.Remove((RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem);
+            Repositories.RepositoryCategories.Remove((RepositoryCategory) Categories.SelectedItem);
             Categories_SelectedIndexChanged(null, null);
         }
 
         private void Caption_TextChanged(object sender, EventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
-            repositoryCategory.Description = _NO_TRANSLATE_Caption.Text;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
+            repositoryCategory.Description = Caption.Text;
             Initialize();
         }
 
         private void RssFeedType_CheckedChanged(object sender, EventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
 
 
             if (RssFeedType.Checked)
@@ -96,7 +96,7 @@ namespace GitUI
                 RepositoriesGrid.ReadOnly = true;
                 RepositoriesGrid.Enabled = false;
                 RepositoriesGrid.BackgroundColor = Color.Gray;
-                _NO_TRANSLATE_RssFeed.Enabled = true;
+                RssFeed.Enabled = true;
                 repositoryCategory.CategoryType = RepositoryCategoryType.RssFeed;
             }
 
@@ -105,7 +105,7 @@ namespace GitUI
                 RepositoriesGrid.ReadOnly = false;
                 RepositoriesGrid.Enabled = true;
                 RepositoriesGrid.BackgroundColor = Color.White;
-                _NO_TRANSLATE_RssFeed.Enabled = false;
+                RssFeed.Enabled = false;
                 repositoryCategory.CategoryType = RepositoryCategoryType.Repositories;
             }
 
@@ -114,56 +114,56 @@ namespace GitUI
 
         private void RssFeed_TextChanged(object sender, EventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
-            repositoryCategory.RssFeedUrl = _NO_TRANSLATE_RssFeed.Text;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
+            repositoryCategory.RssFeedUrl = RssFeed.Text;
         }
 
         private void RssFeed_Validating(object sender, CancelEventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
             if (repositoryCategory.CategoryType == RepositoryCategoryType.RssFeed)
                 repositoryCategory.DownloadRssFeed();
         }
 
         private void Caption_Validating(object sender, CancelEventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
             repositoryCategory.SetIcon();
         }
 
         private void RssFeedType_Validating(object sender, CancelEventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
             repositoryCategory.SetIcon();
         }
 
         private void RepositoriesType_Validating(object sender, CancelEventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
             repositoryCategory.SetIcon();
         }
 
         private void RepositoriesGrid_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            if (_NO_TRANSLATE_Categories.SelectedItem == null)
+            if (Categories.SelectedItem == null)
                 return;
 
-            var repositoryCategory = (RepositoryCategory) _NO_TRANSLATE_Categories.SelectedItem;
+            var repositoryCategory = (RepositoryCategory) Categories.SelectedItem;
             repositoryCategory.SetIcon();
         }
 

@@ -90,22 +90,22 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="BranchComboBox.cs">
+    <Compile Include="Controls\BranchComboBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="BranchComboBox.Designer.cs">
+    <Compile Include="Controls\BranchComboBox.Designer.cs">
       <DependentUpon>BranchComboBox.cs</DependentUpon>
     </Compile>
     <Compile Include="CommitTemplateItem.cs" />
-    <Compile Include="DvcsGraph.Graph.cs">
+    <Compile Include="Controls\DvcsGraph.Graph.cs">
       <DependentUpon>DvcsGraph.cs</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="DvcsGraph.Junction.cs">
+    <Compile Include="Controls\DvcsGraph.Junction.cs">
       <DependentUpon>DvcsGraph.cs</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="DvcsGraph.Lanes.cs">
+    <Compile Include="Controls\DvcsGraph.Lanes.cs">
       <DependentUpon>DvcsGraph.cs</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
@@ -188,10 +188,10 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GitUIExtensions.cs" />
-    <Compile Include="Hotkey\ControlHotkeys.cs">
+    <Compile Include="Settings\ControlHotkeys.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Hotkey\ControlHotkeys.Designer.cs">
+    <Compile Include="Settings\ControlHotkeys.Designer.cs">
       <DependentUpon>ControlHotkeys.cs</DependentUpon>
     </Compile>
     <Compile Include="Hotkey\FormHotkeys.cs">
@@ -207,7 +207,7 @@
     <Compile Include="Hotkey\TextboxHotkey.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="MenuStripEx.cs">
+    <Compile Include="Controls\MenuStripEx.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="MouseWheelRedirector.cs" />
@@ -312,7 +312,7 @@
     <Compile Include="FormTranslate.Designer.cs">
       <DependentUpon>FormTranslate.cs</DependentUpon>
     </Compile>
-    <Compile Include="GitExtensionsUserControl.cs">
+    <Compile Include="Controls\GitExtensionsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="FormBrowse.cs">
@@ -328,46 +328,46 @@
     <Compile Include="FormCommit.Designer.cs">
       <DependentUpon>FormCommit.cs</DependentUpon>
     </Compile>
-    <Compile Include="CommitInfo.cs">
+    <Compile Include="Controls\CommitInfo.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="CommitInfo.Designer.cs">
+    <Compile Include="Controls\CommitInfo.Designer.cs">
       <DependentUpon>CommitInfo.cs</DependentUpon>
     </Compile>
-    <Compile Include="Dashboard.cs">
+    <Compile Include="Controls\Dashboard.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Dashboard.Designer.cs">
+    <Compile Include="Controls\Dashboard.Designer.cs">
       <DependentUpon>Dashboard.cs</DependentUpon>
     </Compile>
-    <Compile Include="DashboardCategory.cs">
+    <Compile Include="Controls\DashboardCategory.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="DashboardCategory.Designer.cs">
+    <Compile Include="Controls\DashboardCategory.Designer.cs">
       <DependentUpon>DashboardCategory.cs</DependentUpon>
     </Compile>
-    <Compile Include="DashboardEditor.cs">
+    <Compile Include="Settings\DashboardEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="DashboardEditor.Designer.cs">
+    <Compile Include="Settings\DashboardEditor.Designer.cs">
       <DependentUpon>DashboardEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="DashboardItem.cs">
+    <Compile Include="Controls\DashboardItem.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="DashboardItem.Designer.cs">
+    <Compile Include="Controls\DashboardItem.Designer.cs">
       <DependentUpon>DashboardItem.cs</DependentUpon>
     </Compile>
-    <Compile Include="DvcsGraph.cs">
+    <Compile Include="Controls\DvcsGraph.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="DvcsGraph.Designer.cs">
+    <Compile Include="Controls\DvcsGraph.Designer.cs">
       <DependentUpon>DvcsGraph.cs</DependentUpon>
     </Compile>
-    <Compile Include="FileStatusList.cs">
+    <Compile Include="Controls\FileStatusList.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="FileStatusList.Designer.cs">
+    <Compile Include="Controls\FileStatusList.Designer.cs">
       <DependentUpon>FileStatusList.cs</DependentUpon>
     </Compile>
     <Compile Include="FormCherryPickCommitSmall.cs">
@@ -660,10 +660,10 @@
     <Compile Include="FormRevisionFilter.Designer.cs">
       <DependentUpon>FormRevisionFilter.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormSettings.cs">
+    <Compile Include="Settings\FormSettings.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormSettings.Designer.cs">
+    <Compile Include="Settings\FormSettings.Designer.cs">
       <DependentUpon>FormSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="FormStash.cs">
@@ -708,10 +708,10 @@
     <Compile Include="GitUICommands.cs" />
     <Compile Include="GitUIEventArgs.cs" />
     <Compile Include="Plugin\LoadedPlugins.cs" />
-    <Compile Include="GravatarControl.cs">
+    <Compile Include="Controls\GravatarControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GravatarControl.Designer.cs">
+    <Compile Include="Controls\GravatarControl.Designer.cs">
       <DependentUpon>GravatarControl.cs</DependentUpon>
     </Compile>
     <Compile Include="IndexWatcher.cs" />
@@ -730,10 +730,10 @@
       <DependentUpon>FormOpenDirectory.cs</DependentUpon>
     </Compile>
     <Compile Include="OpenWith.cs" />
-    <Compile Include="PatchGrid.cs">
+    <Compile Include="Controls\PatchGrid.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PatchGrid.Designer.cs">
+    <Compile Include="Controls\PatchGrid.Designer.cs">
       <DependentUpon>PatchGrid.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
@@ -741,10 +741,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="RevisionGrid.cs">
+    <Compile Include="Controls\RevisionGrid.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="RevisionGrid.Designer.cs">
+    <Compile Include="Controls\RevisionGrid.Designer.cs">
       <DependentUpon>RevisionGrid.cs</DependentUpon>
     </Compile>
     <Compile Include="SearchWindow.cs">
@@ -755,17 +755,17 @@
     </Compile>
     <Compile Include="SpellChecker\SpellCheckEditControl.cs" />
     <Compile Include="SpellChecker\TextBoxHelper.cs" />
-    <Compile Include="ToolStripEx.cs">
+    <Compile Include="Controls\ToolStripEx.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ToolStripGitStatus.cs">
+    <Compile Include="Controls\ToolStripGitStatus.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ToolStripGitStatus.Designer.cs">
+    <Compile Include="Controls\ToolStripGitStatus.Designer.cs">
       <DependentUpon>ToolStripGitStatus.cs</DependentUpon>
     </Compile>
     <Compile Include="SpellChecker\TextPos.cs" />
-    <Compile Include="WarningToolStripItem.cs">
+    <Compile Include="Controls\WarningToolStripItem.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="WindowPositionList.cs" />
@@ -799,7 +799,7 @@
       <DependentUpon>FormRenameBranch.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="BranchComboBox.resx">
+    <EmbeddedResource Include="Controls\BranchComboBox.resx">
       <DependentUpon>BranchComboBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Editor\FileViewer.resx">
@@ -871,31 +871,31 @@
       <DependentUpon>FormCommit.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CommitInfo.resx">
+    <EmbeddedResource Include="Controls\CommitInfo.resx">
       <DependentUpon>CommitInfo.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Dashboard.resx">
+    <EmbeddedResource Include="Controls\Dashboard.resx">
       <DependentUpon>Dashboard.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DashboardCategory.resx">
+    <EmbeddedResource Include="Controls\DashboardCategory.resx">
       <DependentUpon>DashboardCategory.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DashboardEditor.resx">
+    <EmbeddedResource Include="Settings\DashboardEditor.resx">
       <DependentUpon>DashboardEditor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DashboardItem.resx">
+    <EmbeddedResource Include="Controls\DashboardItem.resx">
       <DependentUpon>DashboardItem.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DvcsGraph.resx">
+    <EmbeddedResource Include="Controls\DvcsGraph.resx">
       <DependentUpon>DvcsGraph.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FileStatusList.resx">
+    <EmbeddedResource Include="Controls\FileStatusList.resx">
       <DependentUpon>FileStatusList.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -907,7 +907,7 @@
       <DependentUpon>FormRunScriptSpecify.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Hotkey\ControlHotkeys.resx">
+    <EmbeddedResource Include="Settings\ControlHotkeys.resx">
       <DependentUpon>ControlHotkeys.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -1098,7 +1098,7 @@
       <DependentUpon>FormRevisionFilter.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormSettings.resx">
+    <EmbeddedResource Include="Settings\FormSettings.resx">
       <DependentUpon>FormSettings.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -1134,15 +1134,15 @@
       <DependentUpon>FormVerify.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="GitExtensionsUserControl.resx">
-      <DependentUpon>GitExtensionsUserControl.cs</DependentUpon>
+    <EmbeddedResource Include="Controls\GitExtensionsControl.resx">
+      <DependentUpon>GitExtensionsControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="GitLogForm.resx">
       <DependentUpon>GitLogForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="GravatarControl.resx">
+    <EmbeddedResource Include="Controls\GravatarControl.resx">
       <DependentUpon>GravatarControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -1154,7 +1154,7 @@
       <DependentUpon>FormOpenDirectory.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="PatchGrid.resx">
+    <EmbeddedResource Include="Controls\PatchGrid.resx">
       <DependentUpon>PatchGrid.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -1163,11 +1163,11 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="RevisionGrid.resx">
+    <EmbeddedResource Include="Controls\RevisionGrid.resx">
       <DependentUpon>RevisionGrid.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToolStripGitStatus.resx">
+    <EmbeddedResource Include="Controls\ToolStripGitStatus.resx">
       <DependentUpon>ToolStripGitStatus.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>

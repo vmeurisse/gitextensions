@@ -33,7 +33,7 @@ namespace GitUI
             Translate();
 
             LoadFile();
-            _NO_TRANSLATE_GitAttributesText.TextLoaded += GitAttributesFileLoaded;
+            GitAttributesText.TextLoaded += GitAttributesFileLoaded;
         }
 
         private void LoadFile()
@@ -42,7 +42,7 @@ namespace GitUI
             {
                 if (File.Exists(Settings.WorkingDir + ".gitattributes"))
                 {
-                    _NO_TRANSLATE_GitAttributesText.ViewFile(Settings.WorkingDir + ".gitattributes");
+                    GitAttributesText.ViewFile(Settings.WorkingDir + ".gitattributes");
                 }
             }
             catch (Exception ex)
@@ -66,7 +66,7 @@ namespace GitUI
                         Settings.WorkingDir + ".gitattributes",
                         x =>
                         {
-                            this.GitAttributesFile = _NO_TRANSLATE_GitAttributesText.GetText();
+                            this.GitAttributesFile = GitAttributesText.GetText();
                             if (!this.GitAttributesFile.EndsWith(Environment.NewLine))
                                 this.GitAttributesFile += Environment.NewLine;
                             File.WriteAllBytes(x, Settings.SystemEncoding.GetBytes(this.GitAttributesFile));
@@ -120,12 +120,12 @@ namespace GitUI
 
         private bool IsFileUpToDate()
         {
-            return GitAttributesFile == _NO_TRANSLATE_GitAttributesText.GetText();
+            return GitAttributesFile == GitAttributesText.GetText();
         }
 
         private void GitAttributesFileLoaded(object sender, EventArgs e)
         {
-            GitAttributesFile = _NO_TRANSLATE_GitAttributesText.GetText();           
+            GitAttributesFile = GitAttributesText.GetText();           
         }
     }
 }

@@ -34,11 +34,11 @@ namespace GitUI
         {
             try
             {
-                var dirTo = this._NO_TRANSLATE_destinationComboBox.Text;
+                var dirTo = this.destinationComboBox.Text;
                 if (!dirTo.EndsWith(Settings.PathSeparator.ToString()) && !dirTo.EndsWith(Settings.PathSeparatorWrong.ToString()))
                     dirTo += Settings.PathSeparator.ToString();
 
-                dirTo += this._NO_TRANSLATE_subdirectoryTextBox.Text;
+                dirTo += this.subdirectoryTextBox.Text;
 
                 //Repositories.RepositoryHistory.AddMostRecentRepository(_NO_TRANSLATE_From.Text);
                 //Repositories.RepositoryHistory.AddMostRecentRepository(dirTo);
@@ -46,7 +46,7 @@ namespace GitUI
                 if (!Directory.Exists(dirTo))
                     Directory.CreateDirectory(dirTo);
 
-                var authorsfile = this._NO_TRANSLATE_authorsFileTextBox.Text;
+                var authorsfile = this.authorsFileTextBox.Text;
                 bool resetauthorsfile = false;
                 if (authorsfile != null && authorsfile.Trim().Length != 0 && !File.Exists(authorsfile.Trim()) && !(resetauthorsfile = this.AskContinutWithoutAuthorsFile(authorsfile)))
                 {
@@ -57,7 +57,7 @@ namespace GitUI
                     authorsfile = null;
                 }
                 var fromProcess = new FormProcess(
-                    Settings.GitCommand, GitSvnCommandHelpers.CloneCmd(this._NO_TRANSLATE_svnRepositoryComboBox.Text, dirTo, authorsfile));
+                    Settings.GitCommand, GitSvnCommandHelpers.CloneCmd(this.svnRepositoryComboBox.Text, dirTo, authorsfile));
                 
                 fromProcess.ShowDialog(this);
 
@@ -91,26 +91,26 @@ namespace GitUI
 
         private void browseButton_Click(object sender, EventArgs e)
         {
-            var dialog = new FolderBrowserDialog { SelectedPath = this._NO_TRANSLATE_destinationComboBox.Text };
+            var dialog = new FolderBrowserDialog { SelectedPath = this.destinationComboBox.Text };
             if (dialog.ShowDialog(this) == DialogResult.OK)
-                this._NO_TRANSLATE_destinationComboBox.Text = dialog.SelectedPath;
+                this.destinationComboBox.Text = dialog.SelectedPath;
         }
 
         private void authorsFileBrowseButton_Click(object sender, EventArgs e)
         {
-            var dialog = new OpenFileDialog() { InitialDirectory = this._NO_TRANSLATE_destinationComboBox.Text };
+            var dialog = new OpenFileDialog() { InitialDirectory = this.destinationComboBox.Text };
             if (dialog.ShowDialog(this) == DialogResult.OK) 
-                this._NO_TRANSLATE_authorsFileTextBox.Text = dialog.FileName;
+                this.authorsFileTextBox.Text = dialog.FileName;
         }
 
         private void destinationComboBox_DropDown(object sender, EventArgs e)
         {
             System.ComponentModel.BindingList<Repository> repos = Repositories.RepositoryHistory.Repositories;
-            if (this._NO_TRANSLATE_destinationComboBox.Items.Count != repos.Count)
+            if (this.destinationComboBox.Items.Count != repos.Count)
             {
-                this._NO_TRANSLATE_destinationComboBox.Items.Clear();
+                this.destinationComboBox.Items.Clear();
                 foreach (Repository repo in repos)
-                    this._NO_TRANSLATE_destinationComboBox.Items.Add(repo.Path);
+                    this.destinationComboBox.Items.Add(repo.Path);
             }
         }
     }

@@ -73,9 +73,9 @@ namespace GitUI
 
             foreach (CultureInfo cultureInfo in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {
-                if (!_NO_TRANSLATE_languageCode.Items.Contains(cultureInfo.TwoLetterISOLanguageName))
+                if (!languageCode.Items.Contains(cultureInfo.TwoLetterISOLanguageName))
                 {
-                    _NO_TRANSLATE_languageCode.Items.Add(string.Concat(cultureInfo.TwoLetterISOLanguageName, " (", cultureInfo.DisplayName, ")"));
+                    languageCode.Items.Add(string.Concat(cultureInfo.TwoLetterISOLanguageName, " (", cultureInfo.DisplayName, ")"));
                 }
             }
 
@@ -248,7 +248,7 @@ namespace GitUI
 
         private void saveAs_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_NO_TRANSLATE_languageCode.Text))
+            if (string.IsNullOrEmpty(languageCode.Text))
                 if (MessageBox.Show(this, noLanguageCodeSelected.Text, noLanguageCodeSelectedCaption.Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
                     return;
 
@@ -259,10 +259,10 @@ namespace GitUI
 
         private string GetSelectedLanguageCode()
         {
-            if (string.IsNullOrEmpty(_NO_TRANSLATE_languageCode.Text) || _NO_TRANSLATE_languageCode.Text.Length < 2)
+            if (string.IsNullOrEmpty(languageCode.Text) || languageCode.Text.Length < 2)
                 return null;
 
-            return _NO_TRANSLATE_languageCode.Text.Substring(0, 2);
+            return languageCode.Text.Substring(0, 2);
         }
 
         private void SaveAs()
@@ -310,18 +310,18 @@ namespace GitUI
 
             if (translation == null)
             {
-                _NO_TRANSLATE_languageCode.Text = "";
+                languageCode.Text = "";
                 return;
             }
 
             try
             {
                 var culture = new CultureInfo(translation.LanguageCode);
-                _NO_TRANSLATE_languageCode.Text = string.Concat(culture.TwoLetterISOLanguageName, " (", culture.DisplayName, ")");
+                languageCode.Text = string.Concat(culture.TwoLetterISOLanguageName, " (", culture.DisplayName, ")");
             }
             catch
             {
-                _NO_TRANSLATE_languageCode.Text = translation.LanguageCode;
+                languageCode.Text = translation.LanguageCode;
             }
         }
 
@@ -458,7 +458,7 @@ namespace GitUI
 
         private void googleTranslate_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_NO_TRANSLATE_languageCode.Text))
+            if (string.IsNullOrEmpty(languageCode.Text))
             {
                 MessageBox.Show(this, selectLanguageCode.Text);
                 return;
@@ -477,7 +477,7 @@ namespace GitUI
 
         private void googleAll_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_NO_TRANSLATE_languageCode.Text))
+            if (string.IsNullOrEmpty(languageCode.Text))
             {
                 MessageBox.Show(this, selectLanguageCode.Text);
                 return;

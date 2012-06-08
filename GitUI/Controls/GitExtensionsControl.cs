@@ -8,11 +8,16 @@ using System.Collections.Generic;
 
 namespace GitUI
 {
-    public class GitExtensionsControl : UserControl, ITranslate
+    [ProvideProperty("DontTranslate", typeof(Component))]
+    public class GitExtensionsControl : UserControl, ITranslate, IExtenderProvider
     {
+        private HashSet<Component> _dontTranslateComponents;
+
         public GitExtensionsControl()
         {
             Font = SystemFonts.MessageBoxFont;
+
+            _dontTranslateComponents = new HashSet<Component>();
 
             Load += GitExtensionsControl_Load;
         }
@@ -106,5 +111,49 @@ namespace GitUI
             return true;
         }
         #endregion
+
+        #region IExtenderProvider Members
+        private bool IsWeControlParent(Control control)
+        {
+            while (control != null)
+            {
+                if (Object.ReferenceEquals(this, control))
+                    return true;
+                control = control.Parent;
+            }
+            return false;
+        }
+
+        public bool CanExtend(object extendee)
+        {
+            ToolStripItem item = extendee as ToolStripItem;
+            Control control;
+            if (item != null)
+                control = item.Owner != null ? item.Owner.Parent : null;
+            else
+                control = extendee as Control;
+            if (control == null)
+                return false;
+            if (Object.ReferenceEquals(this, control))
+                return false;
+            return IsWeControlParent(control);
+        }
+        #endregion
+
+        [DefaultValue(false)]
+        public bool GetDontTranslate(Component component)
+        {
+            if (component.GetType().Name.StartsWith("_NO_TRANSLATE_"))
+                return true;
+            return _dontTranslateComponents.Contains(component);
+        }
+
+        public void SetDontTranslate(Component component, bool value)
+        {
+            if (value || component.GetType().Name.StartsWith("_NO_TRANSLATE_"))
+                _dontTranslateComponents.Add(component);
+            else
+                _dontTranslateComponents.Remove(component);
+        }
     }
 }

@@ -40,7 +40,7 @@ namespace GitUI
             this.ToolStrip = new GitUI.ToolStripEx();
             this.RefreshButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
-            this._NO_TRANSLATE_Workingdir = new System.Windows.Forms.ToolStripSplitButton();
+            this.Workingdir = new System.Windows.Forms.ToolStripSplitButton();
             this.branchSelect = new System.Windows.Forms.ToolStripSplitButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSplitStash = new System.Windows.Forms.ToolStripSplitButton();
@@ -266,7 +266,7 @@ namespace GitUI
             this.ToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.RefreshButton,
             this.toolStripSeparator17,
-            this._NO_TRANSLATE_Workingdir,
+            this.Workingdir,
             this.branchSelect,
             this.toolStripSeparator1,
             this.toolStripSplitStash,
@@ -307,17 +307,18 @@ namespace GitUI
             this.toolStripSeparator17.Name = "toolStripSeparator17";
             this.toolStripSeparator17.Size = new System.Drawing.Size(6, 25);
             // 
-            // _NO_TRANSLATE_Workingdir
+            // Workingdir
             // 
-            this._NO_TRANSLATE_Workingdir.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._NO_TRANSLATE_Workingdir.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this._NO_TRANSLATE_Workingdir.Name = "_NO_TRANSLATE_Workingdir";
-            this._NO_TRANSLATE_Workingdir.Size = new System.Drawing.Size(83, 22);
-            this._NO_TRANSLATE_Workingdir.Text = "WorkingDir";
-            this._NO_TRANSLATE_Workingdir.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._NO_TRANSLATE_Workingdir.ToolTipText = "Change working directory";
-            this._NO_TRANSLATE_Workingdir.ButtonClick += new System.EventHandler(this.WorkingdirClick);
-            this._NO_TRANSLATE_Workingdir.DropDownOpening += new System.EventHandler(this.WorkingdirDropDownOpening);
+            this.SetDontTranslate(this.Workingdir, true);
+            this.Workingdir.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.Workingdir.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.Workingdir.Name = "Workingdir";
+            this.Workingdir.Size = new System.Drawing.Size(83, 22);
+            this.Workingdir.Text = "WorkingDir";
+            this.Workingdir.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.Workingdir.ToolTipText = "Change working directory";
+            this.Workingdir.ButtonClick += new System.EventHandler(this.WorkingdirClick);
+            this.Workingdir.DropDownOpening += new System.EventHandler(this.WorkingdirDropDownOpening);
             // 
             // branchSelect
             // 
@@ -1702,7 +1703,7 @@ namespace GitUI
         private System.Windows.Forms.SplitContainer FileTreeSplitContainer;
         private ToolStripEx ToolStrip;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
-        private System.Windows.Forms.ToolStripSplitButton _NO_TRANSLATE_Workingdir;
+        private System.Windows.Forms.ToolStripSplitButton Workingdir;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton GitBash;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;

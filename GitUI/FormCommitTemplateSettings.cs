@@ -28,17 +28,17 @@ namespace GitUI
             InitializeComponent();
             Translate();
 
-            _NO_TRANSLATE_textBoxCommitTemplateName.MaxLength = _maxUsedCharsForName;
+            textBoxCommitTemplateName.MaxLength = _maxUsedCharsForName;
 
             LoadSettings();
         }
 
         private void LoadSettings()
         {
-            _NO_TRANSLATE_numericMaxFirstLineLength.Value = Settings.CommitValidationMaxCntCharsFirstLine;
-            _NO_TRANSLATE_numericMaxLineLength.Value = Settings.CommitValidationMaxCntCharsPerLine;
+            numericMaxFirstLineLength.Value = Settings.CommitValidationMaxCntCharsFirstLine;
+            numericMaxLineLength.Value = Settings.CommitValidationMaxCntCharsPerLine;
             checkBoxSecondLineEmpty.Checked = Settings.CommitValidationSecondLineMustBeEmpty;
-            _NO_TRANSLATE_textBoxCommitValidationRegex.Text = Settings.CommitValidationRegEx;
+            textBoxCommitValidationRegex.Text = Settings.CommitValidationRegEx;
 
             _commitTemplates = CommitTemplateItem.DeserializeCommitTemplates(Settings.CommitTemplates);
 
@@ -49,23 +49,23 @@ namespace GitUI
                     _commitTemplates[i] = new CommitTemplateItem();
             }
 
-            _NO_TRANSLATE_comboBoxCommitTemplates.Items.Clear();
+            comboBoxCommitTemplates.Items.Clear();
 
             for (int i = 0; i < _commitTemplates.Length; i++)
             {           
-                _NO_TRANSLATE_comboBoxCommitTemplates.Items.Add(String.Empty);
+                comboBoxCommitTemplates.Items.Add(String.Empty);
                 RefreshLineInListBox(i);
             }
 
-            _NO_TRANSLATE_comboBoxCommitTemplates.SelectedIndex = 0;
+            comboBoxCommitTemplates.SelectedIndex = 0;
         }
 
         private void SaveSettings()
         {
-            Settings.CommitValidationMaxCntCharsFirstLine = Convert.ToInt32(_NO_TRANSLATE_numericMaxFirstLineLength.Value);
-            Settings.CommitValidationMaxCntCharsPerLine = Convert.ToInt32(_NO_TRANSLATE_numericMaxLineLength.Value);
+            Settings.CommitValidationMaxCntCharsFirstLine = Convert.ToInt32(numericMaxFirstLineLength.Value);
+            Settings.CommitValidationMaxCntCharsPerLine = Convert.ToInt32(numericMaxLineLength.Value);
             Settings.CommitValidationSecondLineMustBeEmpty = checkBoxSecondLineEmpty.Checked;
-            Settings.CommitValidationRegEx = _NO_TRANSLATE_textBoxCommitValidationRegex.Text;
+            Settings.CommitValidationRegEx = textBoxCommitValidationRegex.Text;
 
             string serializedCommitTemplates = CommitTemplateItem.SerializeCommitTemplates(_commitTemplates);
             if (null == serializedCommitTemplates)
@@ -88,19 +88,19 @@ namespace GitUI
 
         private void textCommitTemplateText_TextChanged(object sender, EventArgs e)
         {
-            _commitTemplates[_NO_TRANSLATE_comboBoxCommitTemplates.SelectedIndex].Text = _NO_TRANSLATE_textCommitTemplateText.Text;
+            _commitTemplates[comboBoxCommitTemplates.SelectedIndex].Text = textCommitTemplateText.Text;
         }
 
         private void textBoxCommitTemplateName_TextChanged(object sender, EventArgs e)
         {
-            _commitTemplates[_NO_TRANSLATE_comboBoxCommitTemplates.SelectedIndex].Name = _NO_TRANSLATE_textBoxCommitTemplateName.Text;
-            RefreshLineInListBox(_NO_TRANSLATE_comboBoxCommitTemplates.SelectedIndex);
+            _commitTemplates[comboBoxCommitTemplates.SelectedIndex].Name = textBoxCommitTemplateName.Text;
+            RefreshLineInListBox(comboBoxCommitTemplates.SelectedIndex);
         }
 
         private void comboBoxCommitTemplates_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _NO_TRANSLATE_textCommitTemplateText.Text = _commitTemplates[_NO_TRANSLATE_comboBoxCommitTemplates.SelectedIndex].Text;
-            _NO_TRANSLATE_textBoxCommitTemplateName.Text = _commitTemplates[_NO_TRANSLATE_comboBoxCommitTemplates.SelectedIndex].Name;
+            textCommitTemplateText.Text = _commitTemplates[comboBoxCommitTemplates.SelectedIndex].Text;
+            textBoxCommitTemplateName.Text = _commitTemplates[comboBoxCommitTemplates.SelectedIndex].Name;
         }
 
         private void RefreshLineInListBox(int line)
@@ -115,7 +115,7 @@ namespace GitUI
             else
                 comboBoxText = "<" + _emptyTemplate.Text + ">";
 
-            _NO_TRANSLATE_comboBoxCommitTemplates.Items[line] = String.Format("{0} : {1}", (line + 1), comboBoxText);
+            comboBoxCommitTemplates.Items[line] = String.Format("{0} : {1}", (line + 1), comboBoxText);
         }
 
     }

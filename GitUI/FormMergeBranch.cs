@@ -46,7 +46,7 @@ namespace GitUI
         {
             Settings.NoFastForwardMerge = noFastForward.Checked;
 
-            var process = new FormProcess(GitCommandHelpers.MergeBranchCmd(Branches.GetSelectedText(), fastForward.Checked, squash.Checked, noCommit.Checked, _NO_TRANSLATE_mergeStrategy.Text));
+            var process = new FormProcess(GitCommandHelpers.MergeBranchCmd(Branches.GetSelectedText(), fastForward.Checked, squash.Checked, noCommit.Checked, mergeStrategy.Text));
             process.ShowDialog(this);
 
             var wasConflict = MergeConflictHandler.HandleMergeConflicts(this);
@@ -57,11 +57,11 @@ namespace GitUI
 
         private void NonDefaultMergeStrategy_CheckedChanged(object sender, EventArgs e)
         {
-            _NO_TRANSLATE_mergeStrategy.Visible = NonDefaultMergeStrategy.Checked;
+            mergeStrategy.Visible = NonDefaultMergeStrategy.Checked;
             strategyHelp.Visible = NonDefaultMergeStrategy.Checked;
 
-            if (!_NO_TRANSLATE_mergeStrategy.Visible)
-                _NO_TRANSLATE_mergeStrategy.Text = "";
+            if (!mergeStrategy.Visible)
+                mergeStrategy.Text = "";
         }
 
         private void strategyHelp_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)

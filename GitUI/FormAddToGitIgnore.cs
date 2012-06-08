@@ -52,9 +52,9 @@ namespace GitUI
 
         private void UpdatePreviewPanel()
         {
-            _NO_TRANSLATE_Preview.DataSource = Settings.Module.GetFiles(FilePattern.Text);
-            _NO_TRANSLATE_filesWillBeIgnored.Text = string.Format(_matchingFilesString.Text, _NO_TRANSLATE_Preview.Items.Count.ToString());
-            noMatchPanel.Visible = (_NO_TRANSLATE_Preview.Items.Count == 0);
+            Preview.DataSource = Settings.Module.GetFiles(FilePattern.Text);
+            filesWillBeIgnored.Text = string.Format(_matchingFilesString.Text, Preview.Items.Count.ToString());
+            noMatchPanel.Visible = (Preview.Items.Count == 0);
         }
 
         private void FilePattern_TextChanged(object sender, EventArgs e)

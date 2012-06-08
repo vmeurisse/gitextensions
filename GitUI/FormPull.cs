@@ -74,15 +74,15 @@ namespace GitUI
 
             branch = Settings.Module.GetSelectedBranch();
             string currentBranchRemote = Settings.Module.GetSetting(string.Format("branch.{0}.remote", branch));
-            if (currentBranchRemote.IsNullOrEmpty() && _NO_TRANSLATE_Remotes.Items.Count >= 3)
+            if (currentBranchRemote.IsNullOrEmpty() && Remotes.Items.Count >= 3)
             {
-                IList<string> remotes = (IList<string>)_NO_TRANSLATE_Remotes.DataSource;
+                IList<string> remotes = (IList<string>)Remotes.DataSource;
                 int i = remotes.IndexOf("origin");
-                _NO_TRANSLATE_Remotes.SelectedIndex = i >= 0 ? i : 1;
+                Remotes.SelectedIndex = i >= 0 ? i : 1;
             }
             else
-                _NO_TRANSLATE_Remotes.Text = currentBranchRemote;
-            _NO_TRANSLATE_localBranch.Text = branch;
+                Remotes.Text = currentBranchRemote;
+            localBranch.Text = branch;
 
             Merge.Checked = Settings.PullMerge == "merge";
             Rebase.Checked = Settings.PullMerge == "rebase";
@@ -95,7 +95,7 @@ namespace GitUI
         {
             IList<string> remotes = new List<string>(Settings.Module.GetRemotes());
             remotes.Insert(0, "[ All ]");
-            _NO_TRANSLATE_Remotes.DataSource = remotes;
+            Remotes.DataSource = remotes;
         }
 
         public DialogResult PullAndShowDialogWhenFailed()
@@ -130,7 +130,7 @@ namespace GitUI
         private void BranchesDropDown(object sender, EventArgs e)
         {
             if ((PullFromUrl.Checked && string.IsNullOrEmpty(PullSource.Text)) &&
-                (PullFromRemote.Checked && string.IsNullOrEmpty(_NO_TRANSLATE_Remotes.Text)))
+                (PullFromRemote.Checked && string.IsNullOrEmpty(Remotes.Text)))
             {
                 Branches.DataSource = null;
                 return;
@@ -159,7 +159,7 @@ namespace GitUI
                     foreach (var head in Settings.Module.GetHeads(true, true))
                     {
                         if (!head.IsRemote ||
-                            !head.Name.StartsWith(_NO_TRANSLATE_Remotes.Text, StringComparison.CurrentCultureIgnoreCase))
+                            !head.Name.StartsWith(Remotes.Text, StringComparison.CurrentCultureIgnoreCase))
                             continue;
 
                         _heads.Insert(0, head);
@@ -222,7 +222,7 @@ namespace GitUI
                 MessageBox.Show(this, _selectSourceDirectory.Text);
                 return false;
             }
-            if (PullFromRemote.Checked && string.IsNullOrEmpty(_NO_TRANSLATE_Remotes.Text) && !PullAll())
+            if (PullFromRemote.Checked && string.IsNullOrEmpty(Remotes.Text) && !PullAll())
             {
                 MessageBox.Show(this, _selectRemoteRepository.Text);
                 return false;
@@ -387,7 +387,7 @@ namespace GitUI
             if (PullFromUrl.Checked)
                 return PullSource.Text;
             LoadPuttyKey();
-            return PullAll() ? "--all" : _NO_TRANSLATE_Remotes.Text;
+            return PullAll() ? "--all" : Remotes.Text;
         }
 
         private bool MergeCommitExists()
@@ -401,7 +401,7 @@ namespace GitUI
             if (remoteBranchName.IsNullOrEmpty())
                 return remoteBranchName;
             else
-                return _NO_TRANSLATE_Remotes.Text + "/" + remoteBranchName;
+                return Remotes.Text + "/" + remoteBranchName;
         }
 
         private string CalculateRemoteBranchNameBasedOnBranchesText()
@@ -448,14 +448,14 @@ namespace GitUI
                 return;
 
             if (File.Exists(Settings.Pageant))
-                Settings.Module.StartPageantForRemote(_NO_TRANSLATE_Remotes.Text);
+                Settings.Module.StartPageantForRemote(Remotes.Text);
             else
                 MessageBox.Show(this, _cannotLoadPutty.Text, PuttyCaption);
         }
 
         private void FormPullLoad(object sender, EventArgs e)
         {
-            _NO_TRANSLATE_Remotes.Select();
+            Remotes.Select();
 
             Text = string.Format("Pull ({0})", Settings.WorkingDir);
         }
@@ -479,7 +479,7 @@ namespace GitUI
             ResetRemoteHeads();
             PullSource.Enabled = false;
             BrowseSource.Enabled = false;
-            _NO_TRANSLATE_Remotes.Enabled = true;
+            Remotes.Enabled = true;
             AddRemote.Enabled = true;
 
             Merge.Enabled = !PullAll();
@@ -488,7 +488,7 @@ namespace GitUI
 
         private bool PullAll()
         {
-            return _NO_TRANSLATE_Remotes.Text.Equals("[ All ]", StringComparison.InvariantCultureIgnoreCase);
+            return Remotes.Text.Equals("[ All ]", StringComparison.InvariantCultureIgnoreCase);
         }
 
         private void PullFromUrlCheckedChanged(object sender, EventArgs e)
@@ -499,7 +499,7 @@ namespace GitUI
             ResetRemoteHeads();
             PullSource.Enabled = true;
             BrowseSource.Enabled = true;
-            _NO_TRANSLATE_Remotes.Enabled = false;
+            Remotes.Enabled = false;
             AddRemote.Enabled = false;
 
             Merge.Enabled = true;
@@ -515,9 +515,9 @@ namespace GitUI
             GitUICommands.Instance.StartRemotesDialog(this);
 
             bInternalUpdate = true;
-            string text = _NO_TRANSLATE_Remotes.Text;
+            string text = Remotes.Text;
             UpdateRemotesList();
-            _NO_TRANSLATE_Remotes.Text = text;
+            Remotes.Text = text;
             bInternalUpdate = false;
         }
 

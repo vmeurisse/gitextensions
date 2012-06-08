@@ -30,16 +30,16 @@
         {
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this._NO_TRANSLATE_osLabel = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_versionLabel = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_programTitle = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_actionLabel = new System.Windows.Forms.Label();
+            this.osLabel = new System.Windows.Forms.Label();
+            this.versionLabel = new System.Windows.Forms.Label();
+            this.programTitle = new System.Windows.Forms.Label();
+            this.actionLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // pictureBox1
-            //             
+            // 
             this.pictureBox1.Location = new System.Drawing.Point(5, 5);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(5);
             this.pictureBox1.Name = "pictureBox1";
@@ -52,10 +52,10 @@
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this._NO_TRANSLATE_osLabel);
-            this.panel1.Controls.Add(this._NO_TRANSLATE_versionLabel);
-            this.panel1.Controls.Add(this._NO_TRANSLATE_programTitle);
-            this.panel1.Controls.Add(this._NO_TRANSLATE_actionLabel);
+            this.panel1.Controls.Add(this.osLabel);
+            this.panel1.Controls.Add(this.versionLabel);
+            this.panel1.Controls.Add(this.programTitle);
+            this.panel1.Controls.Add(this.actionLabel);
             this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
@@ -63,41 +63,41 @@
             this.panel1.Size = new System.Drawing.Size(256, 138);
             this.panel1.TabIndex = 1;
             // 
-            // _NO_TRANSLATE_osLabel
+            // osLabel
             // 
-            this._NO_TRANSLATE_osLabel.AutoSize = true;
-            this._NO_TRANSLATE_osLabel.Location = new System.Drawing.Point(134, 52);
-            this._NO_TRANSLATE_osLabel.Name = "_NO_TRANSLATE_osLabel";
-            this._NO_TRANSLATE_osLabel.Size = new System.Drawing.Size(22, 13);
-            this._NO_TRANSLATE_osLabel.TabIndex = 4;
-            this._NO_TRANSLATE_osLabel.Text = "OS";
+            this.osLabel.AutoSize = true;
+            this.osLabel.Location = new System.Drawing.Point(134, 52);
+            this.osLabel.Name = "osLabel";
+            this.osLabel.Size = new System.Drawing.Size(22, 13);
+            this.osLabel.TabIndex = 4;
+            this.osLabel.Text = "OS";
             // 
-            // _NO_TRANSLATE_versionLabel
+            // versionLabel
             // 
-            this._NO_TRANSLATE_versionLabel.AutoSize = true;
-            this._NO_TRANSLATE_versionLabel.Location = new System.Drawing.Point(134, 30);
-            this._NO_TRANSLATE_versionLabel.Name = "_NO_TRANSLATE_versionLabel";
-            this._NO_TRANSLATE_versionLabel.Size = new System.Drawing.Size(59, 13);
-            this._NO_TRANSLATE_versionLabel.TabIndex = 3;
-            this._NO_TRANSLATE_versionLabel.Text = "Version {0}";
+            this.versionLabel.AutoSize = true;
+            this.versionLabel.Location = new System.Drawing.Point(134, 30);
+            this.versionLabel.Name = "versionLabel";
+            this.versionLabel.Size = new System.Drawing.Size(59, 13);
+            this.versionLabel.TabIndex = 3;
+            this.versionLabel.Text = "Version {0}";
             // 
-            // _NO_TRANSLATE_programTitle
+            // programTitle
             // 
-            this._NO_TRANSLATE_programTitle.AutoSize = true;
-            this._NO_TRANSLATE_programTitle.Location = new System.Drawing.Point(134, 8);
-            this._NO_TRANSLATE_programTitle.Name = "_NO_TRANSLATE_programTitle";
-            this._NO_TRANSLATE_programTitle.Size = new System.Drawing.Size(74, 13);
-            this._NO_TRANSLATE_programTitle.TabIndex = 2;
-            this._NO_TRANSLATE_programTitle.Text = "Git Extensions";
+            this.programTitle.AutoSize = true;
+            this.programTitle.Location = new System.Drawing.Point(134, 8);
+            this.programTitle.Name = "programTitle";
+            this.programTitle.Size = new System.Drawing.Size(74, 13);
+            this.programTitle.TabIndex = 2;
+            this.programTitle.Text = "Git Extensions";
             // 
-            // _NO_TRANSLATE_actionLabel
+            // actionLabel
             // 
-            this._NO_TRANSLATE_actionLabel.AutoSize = true;
-            this._NO_TRANSLATE_actionLabel.Location = new System.Drawing.Point(134, 104);
-            this._NO_TRANSLATE_actionLabel.Name = "_NO_TRANSLATE_actionLabel";
-            this._NO_TRANSLATE_actionLabel.Size = new System.Drawing.Size(54, 13);
-            this._NO_TRANSLATE_actionLabel.TabIndex = 1;
-            this._NO_TRANSLATE_actionLabel.Text = "Loading...";
+            this.actionLabel.AutoSize = true;
+            this.actionLabel.Location = new System.Drawing.Point(134, 104);
+            this.actionLabel.Name = "actionLabel";
+            this.actionLabel.Size = new System.Drawing.Size(54, 13);
+            this.actionLabel.TabIndex = 1;
+            this.actionLabel.Text = "Loading...";
             // 
             // FormSplash
             // 
@@ -121,9 +121,9 @@
 
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label _NO_TRANSLATE_programTitle;
-        private System.Windows.Forms.Label _NO_TRANSLATE_actionLabel;
-        private System.Windows.Forms.Label _NO_TRANSLATE_versionLabel;
-        private System.Windows.Forms.Label _NO_TRANSLATE_osLabel;
+        private System.Windows.Forms.Label programTitle;
+        private System.Windows.Forms.Label actionLabel;
+        private System.Windows.Forms.Label versionLabel;
+        private System.Windows.Forms.Label osLabel;
     }
 }

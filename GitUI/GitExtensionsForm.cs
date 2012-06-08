@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
@@ -11,20 +12,24 @@ using Microsoft.WindowsAPICodePack.Taskbar;
 #endif
 using ResourceManager.Translation;
 using Settings = GitCommands.Settings;
-using System.Collections.Generic;
 
 namespace GitUI
 {
-    public class GitExtensionsForm : Form, ITranslate
+    [ProvideProperty("DontTranslate", typeof(Component))]
+    public class GitExtensionsForm : Form, ITranslate, IExtenderProvider
     {
         private static Icon ApplicationIcon = GetApplicationIcon(Settings.IconStyle, Settings.IconColor);
 
         private bool _translated;
 
+        private HashSet<Component> _dontTranslateComponents;
+
         public GitExtensionsForm()
         {
             Icon = ApplicationIcon;
             SetFont();
+
+            _dontTranslateComponents = new HashSet<Component>();
 
             ShowInTaskbar = Application.OpenForms.Count <= 0 || (Application.OpenForms.Count == 1 && Application.OpenForms[0] is FormSplash);
             AutoScaleMode = AutoScaleMode.None;
@@ -370,5 +375,46 @@ namespace GitUI
             TranslationUtl.TranslateItemsFromFields(Name, this, translation);
         }
 
+        #region IExtenderProvider Members
+        private bool IsGitExtensionsControlParent(Control control)
+        {
+            while (control != null)
+            {
+                if (control is GitExtensionsControl)
+                    return true;
+                control = control.Parent;
+            }
+            return false;
+        }
+
+        public bool CanExtend(object extendee)
+        {
+            ToolStripItem item = extendee as ToolStripItem;
+            Control control;
+            if (item != null)
+                control = item.Owner != null ? item.Owner.Parent : null;
+            else
+                control = extendee as Control;
+            if (control == null)
+                return false;
+            return !IsGitExtensionsControlParent(control);
+        }
+        #endregion
+
+        [DefaultValue(false)]
+        public bool GetDontTranslate(Component component)
+        {
+            if (component.GetType().Name.StartsWith("_NO_TRANSLATE_"))
+                return true;
+            return _dontTranslateComponents.Contains(component);
+        }
+
+        public void SetDontTranslate(Component component, bool value)
+        {
+            if (value || component.GetType().Name.StartsWith("_NO_TRANSLATE_"))
+                _dontTranslateComponents.Add(component);
+            else
+                _dontTranslateComponents.Remove(component);
+        }
     }
 }

@@ -32,7 +32,7 @@ namespace GitUI
             SetShorteningStrategy(Settings.ShorteningRecentRepoPathStrategy);
             sortMostRecentRepos.Checked = Settings.SortMostRecentRepos;
             sortLessRecentRepos.Checked = Settings.SortLessRecentRepos;
-            _NO_TRANSLATE_maxRecentRepositories.Value = Settings.MaxMostRecentRepositories;
+            maxRecentRepositoriesEdit.Value = Settings.MaxMostRecentRepositories;
             comboMinWidthEdit.Value = Settings.RecentReposComboMinWidth;
 
         }
@@ -42,7 +42,7 @@ namespace GitUI
             Settings.ShorteningRecentRepoPathStrategy = GetShorteningStrategy();
             Settings.SortMostRecentRepos = sortMostRecentRepos.Checked;
             Settings.SortLessRecentRepos = sortLessRecentRepos.Checked;
-            Settings.MaxMostRecentRepositories = (int)_NO_TRANSLATE_maxRecentRepositories.Value;
+            Settings.MaxMostRecentRepositories = (int)maxRecentRepositoriesEdit.Value;
             Settings.RecentReposComboMinWidth = (int)comboMinWidthEdit.Value;
         }
 
@@ -79,7 +79,7 @@ namespace GitUI
             List<RecentRepoInfo> lessRecentRepos = new List<RecentRepoInfo>();
 
             RecentRepoSplitter splitter = new RecentRepoSplitter();
-            splitter.MaxRecentRepositories = (int)_NO_TRANSLATE_maxRecentRepositories.Value;
+            splitter.MaxRecentRepositories = (int)maxRecentRepositoriesEdit.Value;
             splitter.ShorteningStrategy = GetShorteningStrategy();
             splitter.SortLessRecentRepos = sortLessRecentRepos.Checked;
             splitter.SortMostRecentRepos = sortMostRecentRepos.Checked;

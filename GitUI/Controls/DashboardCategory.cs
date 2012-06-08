@@ -74,18 +74,18 @@ namespace GitUI
         [Category("Appearance")]
         public string Title
         {
-            get { return _NO_TRANSLATE_Caption.Text; }
-            set { _NO_TRANSLATE_Caption.Text = value; }
+            get { return Caption.Text; }
+            set { Caption.Text = value; }
         }
 
         public void DisableContextMenu()
         {
-            _NO_TRANSLATE_Caption.ContextMenuStrip = null;
+            Caption.ContextMenuStrip = null;
         }
 
         private void SetUpFonts()
         {
-            _NO_TRANSLATE_Caption.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 10, FontStyle.Bold,
+            Caption.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 10, FontStyle.Bold,
                                                   GraphicsUnit.Point);
         }
 

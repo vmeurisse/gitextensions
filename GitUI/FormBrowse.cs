@@ -335,11 +335,11 @@ namespace GitUI
         {
             if (Settings.RecentReposComboMinWidth > 0)
             {
-                _NO_TRANSLATE_Workingdir.AutoSize = false;
-                _NO_TRANSLATE_Workingdir.Width = Settings.RecentReposComboMinWidth;
+                Workingdir.AutoSize = false;
+                Workingdir.Width = Settings.RecentReposComboMinWidth;
             }
             else
-                _NO_TRANSLATE_Workingdir.AutoSize = true;
+                Workingdir.AutoSize = true;
 
             Repository r = null;
             if (Repositories.RepositoryHistory.Repositories.Count > 0)
@@ -354,7 +354,7 @@ namespace GitUI
             {
                 var splitter = new RecentRepoSplitter
                 {
-                    measureFont = _NO_TRANSLATE_Workingdir.Font,
+                    measureFont = Workingdir.Font,
                     graphics = graphics
                 };
                 splitter.SplitRecentRepos(Repositories.RepositoryHistory.Repositories, mostRecentRepos, mostRecentRepos);
@@ -363,9 +363,9 @@ namespace GitUI
             RecentRepoInfo ri = mostRecentRepos.Find((e) => e.Repo.Path.Equals(Settings.WorkingDir, StringComparison.InvariantCultureIgnoreCase));
 
             if (ri == null)
-                _NO_TRANSLATE_Workingdir.Text = Settings.WorkingDir;
+                Workingdir.Text = Settings.WorkingDir;
             else
-                _NO_TRANSLATE_Workingdir.Text = ri.Caption;
+                Workingdir.Text = ri.Caption;
         }
 
         /// <summary>
@@ -1575,7 +1575,7 @@ namespace GitUI
         private void AddWorkingdirDropDownItem(Repository repo, string caption)
         {
             ToolStripMenuItem toolStripItem = new ToolStripMenuItem(caption);
-            _NO_TRANSLATE_Workingdir.DropDownItems.Add(toolStripItem);
+            Workingdir.DropDownItems.Add(toolStripItem);
 
             toolStripItem.Click += (hs, he) => SetWorkingDir(repo.Path);
 
@@ -1586,7 +1586,7 @@ namespace GitUI
 
         private void WorkingdirDropDownOpening(object sender, EventArgs e)
         {
-            _NO_TRANSLATE_Workingdir.DropDownItems.Clear();
+            Workingdir.DropDownItems.Clear();
 
             List<RecentRepoInfo> mostRecentRepos = new List<RecentRepoInfo>();
             List<RecentRepoInfo> lessRecentRepos = new List<RecentRepoInfo>();
@@ -1595,7 +1595,7 @@ namespace GitUI
             {
                 var splitter = new RecentRepoSplitter
                 {
-                    measureFont = _NO_TRANSLATE_Workingdir.Font,
+                    measureFont = Workingdir.Font,
                     graphics = graphics
                 };
                 splitter.SplitRecentRepos(Repositories.RepositoryHistory.Repositories, mostRecentRepos, lessRecentRepos);
@@ -1607,15 +1607,15 @@ namespace GitUI
             if (lessRecentRepos.Count > 0)
             {
                 if (mostRecentRepos.Count > 0 && (Settings.SortMostRecentRepos || Settings.SortLessRecentRepos))
-                    _NO_TRANSLATE_Workingdir.DropDownItems.Add(new ToolStripSeparator());
+                    Workingdir.DropDownItems.Add(new ToolStripSeparator());
 
                 foreach (RecentRepoInfo repo in lessRecentRepos)
                     AddWorkingdirDropDownItem(repo.Repo, repo.Caption);
             }
 
-            _NO_TRANSLATE_Workingdir.DropDownItems.Add(new ToolStripSeparator());
+            Workingdir.DropDownItems.Add(new ToolStripSeparator());
             ToolStripMenuItem toolStripItem = new ToolStripMenuItem(_configureWorkingDirMenu.Text);
-            _NO_TRANSLATE_Workingdir.DropDownItems.Add(toolStripItem);
+            Workingdir.DropDownItems.Add(toolStripItem);
 
             toolStripItem.Click += (hs, he) =>
             {

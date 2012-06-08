@@ -44,16 +44,16 @@ namespace GitUI
 
             if (url != null)
             {
-                _NO_TRANSLATE_From.Text = url;
+                From.Text = url;
                 if (!Settings.Module.ValidWorkingDir())
-                    _NO_TRANSLATE_To.Text = Settings.WorkingDir;
+                    To.Text = Settings.WorkingDir;
             }
             else
             {
                 if (Settings.Module.ValidWorkingDir())
-                    _NO_TRANSLATE_From.Text = Settings.WorkingDir;
+                    From.Text = Settings.WorkingDir;
                 else
-                    _NO_TRANSLATE_To.Text = Settings.WorkingDir;
+                    To.Text = Settings.WorkingDir;
             }
 
             this.openedFromProtocolHandler = openedFromProtocolHandler;
@@ -71,22 +71,22 @@ namespace GitUI
                     threadUpdateBranchList.Abort();
                 }
 
-                var dirTo = _NO_TRANSLATE_To.Text;
+                var dirTo = To.Text;
                 if (!dirTo.EndsWith(Settings.PathSeparator.ToString()) && !dirTo.EndsWith(Settings.PathSeparatorWrong.ToString()))
                     dirTo += Settings.PathSeparator.ToString();
 
-                dirTo += _NO_TRANSLATE_NewDirectory.Text;
+                dirTo += NewDirectory.Text;
 
-                Repositories.AddMostRecentRepository(_NO_TRANSLATE_From.Text);
+                Repositories.AddMostRecentRepository(From.Text);
                 Repositories.AddMostRecentRepository(dirTo);
 
                 if (!Directory.Exists(dirTo))
                     Directory.CreateDirectory(dirTo);
 
-                var cloneCmd = GitCommandHelpers.CloneCmd(_NO_TRANSLATE_From.Text, dirTo,
+                var cloneCmd = GitCommandHelpers.CloneCmd(From.Text, dirTo,
                             CentralRepository.Checked, cbIntializeAllSubmodules.Checked, Branches.Text, null);
                 var fromProcess = new FormRemoteProcess(Settings.GitCommand, cloneCmd);
-                fromProcess.SetUrlTryingToConnect(_NO_TRANSLATE_From.Text);
+                fromProcess.SetUrlTryingToConnect(From.Text);
                 fromProcess.ShowDialog(this);
 
                 if (fromProcess.ErrorOccurred() || Settings.Module.InTheMiddleOfPatch())
@@ -116,18 +116,18 @@ namespace GitUI
 
         private void FromBrowseClick(object sender, EventArgs e)
         {
-            var dialog = new FolderBrowserDialog { SelectedPath = _NO_TRANSLATE_From.Text };
+            var dialog = new FolderBrowserDialog { SelectedPath = From.Text };
             if (dialog.ShowDialog(this) == DialogResult.OK)
-                _NO_TRANSLATE_From.Text = dialog.SelectedPath;
+                From.Text = dialog.SelectedPath;
 
             FromTextUpdate(sender, e);
         }
 
         private void ToBrowseClick(object sender, EventArgs e)
         {
-            var dialog = new FolderBrowserDialog { SelectedPath = _NO_TRANSLATE_To.Text };
+            var dialog = new FolderBrowserDialog { SelectedPath = To.Text };
             if (dialog.ShowDialog(this) == DialogResult.OK)
-                _NO_TRANSLATE_To.Text = dialog.SelectedPath;
+                To.Text = dialog.SelectedPath;
 
             ToTextUpdate(sender, e);
         }
@@ -135,22 +135,22 @@ namespace GitUI
         private void FillFromDropDown()
         {          
             System.ComponentModel.BindingList<Repository> repos = Repositories.RemoteRepositoryHistory.Repositories;
-            if (_NO_TRANSLATE_From.Items.Count != repos.Count) 
+            if (From.Items.Count != repos.Count) 
             {
-                _NO_TRANSLATE_To.Items.Clear();
+                To.Items.Clear();
                 foreach (Repository repo in repos)
-                    _NO_TRANSLATE_From.Items.Add(repo.Path);
+                    From.Items.Add(repo.Path);
             }
         }
 
         private void ToDropDown(object sender, EventArgs e)
         {
             System.ComponentModel.BindingList<Repository> repos = Repositories.RepositoryHistory.Repositories;
-            if (_NO_TRANSLATE_To.Items.Count != repos.Count)
+            if (To.Items.Count != repos.Count)
             {
-                _NO_TRANSLATE_To.Items.Clear();
+                To.Items.Clear();
                 foreach (Repository repo in repos)
-                    _NO_TRANSLATE_To.Items.Add(repo.Path);
+                    To.Items.Add(repo.Path);
             }
         }
 
@@ -174,7 +174,7 @@ namespace GitUI
 
         private void FromTextUpdate(object sender, EventArgs e)
         {
-            var path = _NO_TRANSLATE_From.Text;
+            var path = From.Text;
             path = path.TrimEnd(new[] { '\\', '/' });
 
             const string standardRepositorySuffix = ".git";
@@ -183,7 +183,7 @@ namespace GitUI
                 path = path.Substring(0, path.Length - standardRepositorySuffix.Length);
 
             if (path.Contains("\\") || path.Contains("/"))
-                _NO_TRANSLATE_NewDirectory.Text = path.Substring(path.LastIndexOfAny(new[] { '\\', '/' }) + 1);
+                NewDirectory.Text = path.Substring(path.LastIndexOfAny(new[] { '\\', '/' }) + 1);
             
             Branches.DataSource = null;
 
@@ -194,17 +194,17 @@ namespace GitUI
         {
             string destinationPath = string.Empty;                
 
-            if (string.IsNullOrEmpty(_NO_TRANSLATE_To.Text))
+            if (string.IsNullOrEmpty(To.Text))
                 destinationPath += "[" + label2.Text + "]";
             else
-                destinationPath += _NO_TRANSLATE_To.Text.TrimEnd(new[] { '\\', '/' });
+                destinationPath += To.Text.TrimEnd(new[] { '\\', '/' });
 
             destinationPath += "\\";
             
-            if (string.IsNullOrEmpty(_NO_TRANSLATE_NewDirectory.Text))
+            if (string.IsNullOrEmpty(NewDirectory.Text))
                 destinationPath += "[" + label3.Text + "]";
             else
-                destinationPath += _NO_TRANSLATE_NewDirectory.Text;
+                destinationPath += NewDirectory.Text;
 
             Info.Text = string.Format(_infoNewRepositoryLocation.Text, destinationPath);
 
@@ -265,7 +265,7 @@ namespace GitUI
             Branches.DisplayMember = "LocalName";
             if (threadUpdateBranchList != null)
                 threadUpdateBranchList.Abort();
-            string from = _NO_TRANSLATE_From.Text;
+            string from = From.Text;
             Cursor = Cursors.AppStarting;
             threadUpdateBranchList = new Thread(() => UpdateBranches(from));
             threadUpdateBranchList.Start();

@@ -50,7 +50,7 @@
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.Abort = new System.Windows.Forms.Button();
             this.Ok = new System.Windows.Forms.Button();
-            this._NO_TRANSLATE_maxRecentRepositories = new System.Windows.Forms.NumericUpDown();
+            this.maxRecentRepositoriesEdit = new System.Windows.Forms.NumericUpDown();
             this.maxRecentRepositories = new System.Windows.Forms.Label();
             this.sortLessRecentRepos = new System.Windows.Forms.CheckBox();
             this.sortMostRecentRepos = new System.Windows.Forms.CheckBox();
@@ -61,7 +61,7 @@
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this._NO_TRANSLATE_maxRecentRepositories)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maxRecentRepositoriesEdit)).BeginInit();
             this.SuspendLayout();
             // 
             // contextMenuStrip1
@@ -290,18 +290,19 @@
             this.Ok.UseVisualStyleBackColor = true;
             this.Ok.Click += new System.EventHandler(this.Ok_Click);
             // 
-            // _NO_TRANSLATE_maxRecentRepositories
+            // maxRecentRepositoriesEdit
             // 
-            this._NO_TRANSLATE_maxRecentRepositories.Location = new System.Drawing.Point(267, 12);
-            this._NO_TRANSLATE_maxRecentRepositories.Maximum = new decimal(new int[] {
+            this.SetDontTranslate(this.maxRecentRepositoriesEdit, true);
+            this.maxRecentRepositoriesEdit.Location = new System.Drawing.Point(267, 12);
+            this.maxRecentRepositoriesEdit.Maximum = new decimal(new int[] {
             1000000,
             0,
             0,
             0});
-            this._NO_TRANSLATE_maxRecentRepositories.Name = "_NO_TRANSLATE_maxRecentRepositories";
-            this._NO_TRANSLATE_maxRecentRepositories.Size = new System.Drawing.Size(61, 23);
-            this._NO_TRANSLATE_maxRecentRepositories.TabIndex = 1;
-            this._NO_TRANSLATE_maxRecentRepositories.ValueChanged += new System.EventHandler(this.sortMostRecentRepos_CheckedChanged);
+            this.maxRecentRepositoriesEdit.Name = "maxRecentRepositoriesEdit";
+            this.maxRecentRepositoriesEdit.Size = new System.Drawing.Size(61, 23);
+            this.maxRecentRepositoriesEdit.TabIndex = 1;
+            this.maxRecentRepositoriesEdit.ValueChanged += new System.EventHandler(this.sortMostRecentRepos_CheckedChanged);
             // 
             // maxRecentRepositories
             // 
@@ -348,7 +349,7 @@
             this.Controls.Add(this.shorteningGB);
             this.Controls.Add(this.comboPanel);
             this.Controls.Add(this.tableLayoutPanel2);
-            this.Controls.Add(this._NO_TRANSLATE_maxRecentRepositories);
+            this.Controls.Add(this.maxRecentRepositoriesEdit);
             this.Controls.Add(this.maxRecentRepositories);
             this.Controls.Add(this.sortLessRecentRepos);
             this.Controls.Add(this.sortMostRecentRepos);
@@ -364,7 +365,7 @@
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this._NO_TRANSLATE_maxRecentRepositories)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maxRecentRepositoriesEdit)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -372,7 +373,7 @@
 
         #endregion
 
-        private System.Windows.Forms.NumericUpDown _NO_TRANSLATE_maxRecentRepositories;
+        private System.Windows.Forms.NumericUpDown maxRecentRepositoriesEdit;
         private System.Windows.Forms.Label maxRecentRepositories;
         private System.Windows.Forms.CheckBox sortLessRecentRepos;
         private System.Windows.Forms.CheckBox sortMostRecentRepos;

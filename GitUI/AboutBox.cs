@@ -45,7 +45,7 @@ namespace GitUI
         {
             base.OnLoad(e);
 
-            _NO_TRANSLATE_labelVersionInfo.Text = _NO_TRANSLATE_labelVersionInfo.Text + GitCommands.Settings.GitExtensionsVersionString;
+            labelVersionInfo.Text = labelVersionInfo.Text + GitCommands.Settings.GitExtensionsVersionString;
         }
 
         //Contributers list 
@@ -71,10 +71,10 @@ namespace GitUI
 
         private void thanksTimer_Tick(object sender, EventArgs e)
         {
-            _NO_TRANSLATE_thanksToTicker.Text = contributersList[random.Next(contributersList.Length - 1)].Trim();
+            thanksToTicker.Text = contributersList[random.Next(contributersList.Length - 1)].Trim();
         }
 
-        private void _NO_TRANSLATE_thanksToTicker_Click(object sender, EventArgs e)
+        private void thanksToTicker_Click(object sender, EventArgs e)
         {
             FormContributors formContributors = new FormContributors();
             formContributors.LoadContributors(coders, translators, designers, other);

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace GitUI
@@ -20,6 +18,7 @@ namespace GitUI
         /// <remarks>
         /// Default value is false, which is the same behavior provided by the base ToolStrip class.
         /// </remarks>
+        [DefaultValue(false)]
         public bool ClickThrough
         {
             get

@@ -28,11 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this._NO_TRANSLATE_BranchInfo = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_Commit = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_Author = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_Message = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_Date = new System.Windows.Forms.Label();
+            this.BranchInfoLbl = new System.Windows.Forms.Label();
+            this.Commit = new System.Windows.Forms.Label();
+            this.Author = new System.Windows.Forms.Label();
+            this.Message = new System.Windows.Forms.Label();
+            this.Date = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.Hard = new System.Windows.Forms.RadioButton();
             this.Mixed = new System.Windows.Forms.RadioButton();
@@ -42,50 +42,55 @@
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // _NO_TRANSLATE_BranchInfo
+            // BranchInfoLbl
             // 
-            this._NO_TRANSLATE_BranchInfo.AutoSize = true;
-            this._NO_TRANSLATE_BranchInfo.Location = new System.Drawing.Point(13, 13);
-            this._NO_TRANSLATE_BranchInfo.Name = "_NO_TRANSLATE_BranchInfo";
-            this._NO_TRANSLATE_BranchInfo.Size = new System.Drawing.Size(83, 15);
-            this._NO_TRANSLATE_BranchInfo.TabIndex = 0;
-            this._NO_TRANSLATE_BranchInfo.Text = "##Reset {0} to:";
+            this.BranchInfoLbl.AutoSize = true;
+            this.SetDontTranslate(this.BranchInfoLbl, true);
+            this.BranchInfoLbl.Location = new System.Drawing.Point(13, 13);
+            this.BranchInfoLbl.Name = "BranchInfoLbl";
+            this.BranchInfoLbl.Size = new System.Drawing.Size(83, 15);
+            this.BranchInfoLbl.TabIndex = 0;
+            this.BranchInfoLbl.Text = "##Reset {0} to:";
             // 
-            // _NO_TRANSLATE_Commit
+            // Commit
             // 
-            this._NO_TRANSLATE_Commit.AutoSize = true;
-            this._NO_TRANSLATE_Commit.Location = new System.Drawing.Point(31, 34);
-            this._NO_TRANSLATE_Commit.Name = "_NO_TRANSLATE_Commit";
-            this._NO_TRANSLATE_Commit.Size = new System.Drawing.Size(85, 15);
-            this._NO_TRANSLATE_Commit.TabIndex = 1;
-            this._NO_TRANSLATE_Commit.Text = "##Commit: {0}";
+            this.Commit.AutoSize = true;
+            this.SetDontTranslate(this.Commit, true);
+            this.Commit.Location = new System.Drawing.Point(31, 34);
+            this.Commit.Name = "Commit";
+            this.Commit.Size = new System.Drawing.Size(85, 15);
+            this.Commit.TabIndex = 1;
+            this.Commit.Text = "##Commit: {0}";
             // 
-            // _NO_TRANSLATE_Author
+            // Author
             // 
-            this._NO_TRANSLATE_Author.AutoSize = true;
-            this._NO_TRANSLATE_Author.Location = new System.Drawing.Point(31, 57);
-            this._NO_TRANSLATE_Author.Name = "_NO_TRANSLATE_Author";
-            this._NO_TRANSLATE_Author.Size = new System.Drawing.Size(78, 15);
-            this._NO_TRANSLATE_Author.TabIndex = 2;
-            this._NO_TRANSLATE_Author.Text = "##Author: {0}";
+            this.Author.AutoSize = true;
+            this.SetDontTranslate(this.Author, true);
+            this.Author.Location = new System.Drawing.Point(31, 57);
+            this.Author.Name = "Author";
+            this.Author.Size = new System.Drawing.Size(78, 15);
+            this.Author.TabIndex = 2;
+            this.Author.Text = "##Author: {0}";
             // 
-            // _NO_TRANSLATE_Message
+            // Message
             // 
-            this._NO_TRANSLATE_Message.AutoSize = true;
-            this._NO_TRANSLATE_Message.Location = new System.Drawing.Point(31, 106);
-            this._NO_TRANSLATE_Message.Name = "_NO_TRANSLATE_Message";
-            this._NO_TRANSLATE_Message.Size = new System.Drawing.Size(87, 15);
-            this._NO_TRANSLATE_Message.TabIndex = 3;
-            this._NO_TRANSLATE_Message.Text = "##Message: {0}";
+            this.Message.AutoSize = true;
+            this.SetDontTranslate(this.Message, true);
+            this.Message.Location = new System.Drawing.Point(31, 106);
+            this.Message.Name = "Message";
+            this.Message.Size = new System.Drawing.Size(87, 15);
+            this.Message.TabIndex = 3;
+            this.Message.Text = "##Message: {0}";
             // 
-            // _NO_TRANSLATE_Date
+            // Date
             // 
-            this._NO_TRANSLATE_Date.AutoSize = true;
-            this._NO_TRANSLATE_Date.Location = new System.Drawing.Point(31, 82);
-            this._NO_TRANSLATE_Date.Name = "_NO_TRANSLATE_Date";
-            this._NO_TRANSLATE_Date.Size = new System.Drawing.Size(111, 15);
-            this._NO_TRANSLATE_Date.TabIndex = 4;
-            this._NO_TRANSLATE_Date.Text = "##Commit date: {0}";
+            this.Date.AutoSize = true;
+            this.SetDontTranslate(this.Date, true);
+            this.Date.Location = new System.Drawing.Point(31, 82);
+            this.Date.Name = "Date";
+            this.Date.Size = new System.Drawing.Size(111, 15);
+            this.Date.TabIndex = 4;
+            this.Date.Text = "##Commit date: {0}";
             // 
             // groupBox1
             // 
@@ -107,7 +112,7 @@
             this.Hard.Size = new System.Drawing.Size(500, 19);
             this.Hard.TabIndex = 2;
             this.Hard.Text = "Hard: reset working dir and index (discard ALL local changes, even uncommitted ch" +
-                "anges)";
+    "anges)";
             this.Hard.UseVisualStyleBackColor = true;
             // 
             // Mixed
@@ -160,11 +165,11 @@
             this.Controls.Add(this.Cancel);
             this.Controls.Add(this.Ok);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this._NO_TRANSLATE_Date);
-            this.Controls.Add(this._NO_TRANSLATE_Message);
-            this.Controls.Add(this._NO_TRANSLATE_Author);
-            this.Controls.Add(this._NO_TRANSLATE_Commit);
-            this.Controls.Add(this._NO_TRANSLATE_BranchInfo);
+            this.Controls.Add(this.Date);
+            this.Controls.Add(this.Message);
+            this.Controls.Add(this.Author);
+            this.Controls.Add(this.Commit);
+            this.Controls.Add(this.BranchInfoLbl);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -181,11 +186,11 @@
 
         #endregion
 
-        private System.Windows.Forms.Label _NO_TRANSLATE_BranchInfo;
-        private System.Windows.Forms.Label _NO_TRANSLATE_Commit;
-        private System.Windows.Forms.Label _NO_TRANSLATE_Author;
-        private System.Windows.Forms.Label _NO_TRANSLATE_Message;
-        private System.Windows.Forms.Label _NO_TRANSLATE_Date;
+        private System.Windows.Forms.Label BranchInfoLbl;
+        private System.Windows.Forms.Label Commit;
+        private System.Windows.Forms.Label Author;
+        private System.Windows.Forms.Label Message;
+        private System.Windows.Forms.Label Date;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton Hard;
         private System.Windows.Forms.RadioButton Mixed;

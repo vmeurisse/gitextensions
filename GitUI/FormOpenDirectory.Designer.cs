@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.label1 = new System.Windows.Forms.Label();
-            this._NO_TRANSLATE_Directory = new System.Windows.Forms.ComboBox();
+            this.DirectoryComboBox = new System.Windows.Forms.ComboBox();
             this.Browse = new System.Windows.Forms.Button();
             this.Load = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -43,18 +43,19 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Directory";
             // 
-            // _NO_TRANSLATE_Directory
+            // DirectoryComboBox
             // 
-            this._NO_TRANSLATE_Directory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.DirectoryComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this._NO_TRANSLATE_Directory.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this._NO_TRANSLATE_Directory.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystemDirectories;
-            this._NO_TRANSLATE_Directory.FormattingEnabled = true;
-            this._NO_TRANSLATE_Directory.Location = new System.Drawing.Point(85, 10);
-            this._NO_TRANSLATE_Directory.Name = "_NO_TRANSLATE_Directory";
-            this._NO_TRANSLATE_Directory.Size = new System.Drawing.Size(226, 23);
-            this._NO_TRANSLATE_Directory.TabIndex = 1;
-            this._NO_TRANSLATE_Directory.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DirectoryKeyPress);
+            this.DirectoryComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.DirectoryComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.FileSystemDirectories;
+            this.SetDontTranslate(this.DirectoryComboBox, true);
+            this.DirectoryComboBox.FormattingEnabled = true;
+            this.DirectoryComboBox.Location = new System.Drawing.Point(85, 10);
+            this.DirectoryComboBox.Name = "DirectoryComboBox";
+            this.DirectoryComboBox.Size = new System.Drawing.Size(226, 23);
+            this.DirectoryComboBox.TabIndex = 1;
+            this.DirectoryComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DirectoryKeyPress);
             // 
             // Browse
             // 
@@ -87,7 +88,7 @@
             this.ClientSize = new System.Drawing.Size(431, 72);
             this.Controls.Add(this.Load);
             this.Controls.Add(this.Browse);
-            this.Controls.Add(this._NO_TRANSLATE_Directory);
+            this.Controls.Add(this.DirectoryComboBox);
             this.Controls.Add(this.label1);
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(1000, 110);
@@ -104,7 +105,7 @@
         #endregion
 
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox _NO_TRANSLATE_Directory;
+        private System.Windows.Forms.ComboBox DirectoryComboBox;
         private System.Windows.Forms.Button Browse;
         private new System.Windows.Forms.Button Load;
     }
