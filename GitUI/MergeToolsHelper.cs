@@ -3,7 +3,7 @@ using System.IO;
 using GitCommands;
 using Microsoft.Win32;
 
-namespace GitUI
+namespace GitUI.SettingsControls
 {
     class MergeToolsHelper
     {     

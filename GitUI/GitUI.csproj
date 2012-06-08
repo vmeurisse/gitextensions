@@ -74,6 +74,7 @@
     </Reference>
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Messaging" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Data" />
@@ -188,10 +189,10 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GitUIExtensions.cs" />
-    <Compile Include="Settings\ControlHotkeys.cs">
+    <Compile Include="SettingsControls\ControlHotkeys.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Settings\ControlHotkeys.Designer.cs">
+    <Compile Include="SettingsControls\ControlHotkeys.Designer.cs">
       <DependentUpon>ControlHotkeys.cs</DependentUpon>
     </Compile>
     <Compile Include="Hotkey\FormHotkeys.cs">
@@ -211,6 +212,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="MouseWheelRedirector.cs" />
+    <Compile Include="SettingsControls\ControlScripts.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SettingsControls\ControlScripts.Designer.cs">
+      <DependentUpon>ControlScripts.cs</DependentUpon>
+    </Compile>
     <Compile Include="MergeToolsHelper.cs" />
     <Compile Include="PathFormatter.cs" />
     <Compile Include="Editor\FileViewer.cs">
@@ -346,11 +353,11 @@
     <Compile Include="Controls\DashboardCategory.Designer.cs">
       <DependentUpon>DashboardCategory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Settings\DashboardEditor.cs">
+    <Compile Include="SettingsControls\ControlDashboardEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Settings\DashboardEditor.Designer.cs">
-      <DependentUpon>DashboardEditor.cs</DependentUpon>
+    <Compile Include="SettingsControls\ControlDashboardEditor.Designer.cs">
+      <DependentUpon>ControlDashboardEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\DashboardItem.cs">
       <SubType>UserControl</SubType>
@@ -660,10 +667,10 @@
     <Compile Include="FormRevisionFilter.Designer.cs">
       <DependentUpon>FormRevisionFilter.cs</DependentUpon>
     </Compile>
-    <Compile Include="Settings\FormSettings.cs">
+    <Compile Include="SettingsControls\FormSettings.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Settings\FormSettings.Designer.cs">
+    <Compile Include="SettingsControls\FormSettings.Designer.cs">
       <DependentUpon>FormSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="FormStash.cs">
@@ -883,8 +890,11 @@
       <DependentUpon>DashboardCategory.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Settings\DashboardEditor.resx">
-      <DependentUpon>DashboardEditor.cs</DependentUpon>
+    <EmbeddedResource Include="SettingsControls\ControlScripts.resx">
+      <DependentUpon>ControlScripts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingsControls\ControlDashboardEditor.resx">
+      <DependentUpon>ControlDashboardEditor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\DashboardItem.resx">
@@ -907,7 +917,7 @@
       <DependentUpon>FormRunScriptSpecify.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Settings\ControlHotkeys.resx">
+    <EmbeddedResource Include="SettingsControls\ControlHotkeys.resx">
       <DependentUpon>ControlHotkeys.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -1098,7 +1108,7 @@
       <DependentUpon>FormRevisionFilter.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Settings\FormSettings.resx">
+    <EmbeddedResource Include="SettingsControls\FormSettings.resx">
       <DependentUpon>FormSettings.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>

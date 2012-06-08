@@ -1,14 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Forms;
 using GitCommands.Repository;
-using System.Drawing;
 
-namespace GitUI
+namespace GitUI.SettingsControls
 {
-    public partial class DashboardEditor : GitExtensionsControl
+    public partial class ControlDashboardEditor : GitExtensionsControl
     {
-        public DashboardEditor()
+        public ControlDashboardEditor()
         {
             InitializeComponent();
             Translate();

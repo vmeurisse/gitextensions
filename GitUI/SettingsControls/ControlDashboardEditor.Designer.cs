@@ -1,8 +1,8 @@
 ﻿using GitCommands.Repository;
 
-namespace GitUI
+namespace GitUI.SettingsControls
 {
-    partial class DashboardEditor
+    partial class ControlDashboardEditor
     {
         /// <summary> 
         /// Required designer variable.
@@ -31,7 +31,7 @@ namespace GitUI
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DashboardEditor));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ControlDashboardEditor));
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.Categories = new System.Windows.Forms.ListBox();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -202,12 +202,12 @@ namespace GitUI
             resources.ApplyResources(this.label1, "label1");
             this.label1.Name = "label1";
             // 
-            // DashboardEditor
+            // ControlDashboardEditor
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.splitContainer2);
-            this.Name = "DashboardEditor";
+            this.Name = "ControlDashboardEditor";
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.Panel2.PerformLayout();

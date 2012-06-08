@@ -27,9 +27,10 @@ namespace GitUI.SpellChecker
 
         protected override void WndProc(ref Message m)
         {
+            const int WM_PAINT = 15;
             switch (m.Msg)
             {
-                case 15: // this is the WM_PAINT message   
+                case WM_PAINT:
                     // invalidate the TextBox so that it gets refreshed properly
                     _richTextBox.Invalidate();
                     // call the default win32 Paint method for the TextBox first   

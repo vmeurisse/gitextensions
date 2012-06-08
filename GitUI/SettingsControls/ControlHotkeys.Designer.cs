@@ -1,4 +1,4 @@
-﻿namespace GitUI.Hotkey
+﻿namespace GitUI.SettingsControls
 {
   partial class ControlHotkeys
   {
@@ -27,7 +27,8 @@
     /// the contents of this method with the code editor.
     /// </summary>
     private void InitializeComponent()
-    {            this.lHotkey = new System.Windows.Forms.Label();
+    {
+            this.lHotkey = new System.Windows.Forms.Label();
             this.bApply = new System.Windows.Forms.Button();
             this.bClear = new System.Windows.Forms.Button();
             this.lHotkeyableItems = new System.Windows.Forms.Label();
@@ -46,14 +47,14 @@
             this.lHotkey.Location = new System.Drawing.Point(3, 471);
             this.lHotkey.MinimumSize = new System.Drawing.Size(120, 0);
             this.lHotkey.Name = "lHotkey";
-            this.lHotkey.Size = new System.Drawing.Size(120, 20);
+            this.lHotkey.Size = new System.Drawing.Size(120, 15);
             this.lHotkey.TabIndex = 3;
             this.lHotkey.Text = "Hotkey";
             // 
             // bApply
             // 
             this.bApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bApply.Location = new System.Drawing.Point(580, 468);
+            this.bApply.Location = new System.Drawing.Point(589, 468);
             this.bApply.Name = "bApply";
             this.bApply.Size = new System.Drawing.Size(100, 26);
             this.bApply.TabIndex = 5;
@@ -64,7 +65,7 @@
             // bClear
             // 
             this.bClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bClear.Location = new System.Drawing.Point(686, 468);
+            this.bClear.Location = new System.Drawing.Point(695, 468);
             this.bClear.Name = "bClear";
             this.bClear.Size = new System.Drawing.Size(100, 26);
             this.bClear.TabIndex = 6;
@@ -77,7 +78,7 @@
             this.lHotkeyableItems.AutoSize = true;
             this.lHotkeyableItems.Location = new System.Drawing.Point(3, 3);
             this.lHotkeyableItems.Name = "lHotkeyableItems";
-            this.lHotkeyableItems.Size = new System.Drawing.Size(125, 20);
+            this.lHotkeyableItems.Size = new System.Drawing.Size(99, 15);
             this.lHotkeyableItems.TabIndex = 0;
             this.lHotkeyableItems.Text = "Hotkeyable Items";
             // 
@@ -94,7 +95,7 @@
             this.listMappings.Location = new System.Drawing.Point(244, 27);
             this.listMappings.MultiSelect = false;
             this.listMappings.Name = "listMappings";
-            this.listMappings.Size = new System.Drawing.Size(542, 433);
+            this.listMappings.Size = new System.Drawing.Size(551, 433);
             this.listMappings.TabIndex = 2;
             this.listMappings.UseCompatibleStateImageBehavior = false;
             this.listMappings.View = System.Windows.Forms.View.Details;
@@ -126,9 +127,10 @@
             this.cmbSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.cmbSettings.DisplayMember = "Name";
+            this.SetDontTranslate(this.cmbSettings, true);
             this.cmbSettings.FormattingEnabled = true;
             this.cmbSettings.IntegralHeight = false;
-            this.cmbSettings.ItemHeight = 20;
+            this.cmbSettings.ItemHeight = 15;
             this.cmbSettings.Location = new System.Drawing.Point(6, 27);
             this.cmbSettings.Name = "cmbSettings";
             this.cmbSettings.Size = new System.Drawing.Size(232, 433);
@@ -143,7 +145,7 @@
             this.txtHotkey.KeyData = System.Windows.Forms.Keys.None;
             this.txtHotkey.Location = new System.Drawing.Point(129, 468);
             this.txtHotkey.Name = "txtHotkey";
-            this.txtHotkey.Size = new System.Drawing.Size(445, 27);
+            this.txtHotkey.Size = new System.Drawing.Size(454, 23);
             this.txtHotkey.TabIndex = 4;
             this.txtHotkey.Text = "None";
             // 
@@ -159,7 +161,7 @@
             this.Controls.Add(this.lHotkey);
             this.Controls.Add(this.txtHotkey);
             this.Name = "ControlHotkeys";
-            this.Size = new System.Drawing.Size(791, 525);
+            this.Size = new System.Drawing.Size(800, 525);
             this.Load += new System.EventHandler(this.ControlHotkeys_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -168,7 +170,7 @@
 
     #endregion
 
-    private TextboxHotkey txtHotkey;
+    private GitUI.Hotkey.TextboxHotkey txtHotkey;
     private System.Windows.Forms.Label lHotkey;
     private System.Windows.Forms.Button bApply;
     private System.Windows.Forms.Button bClear;

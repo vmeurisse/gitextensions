@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using GitCommands;
 using GitUI.Hotkey;
 using GitUI.Script;
+using GitUI.SettingsControls;
 using GitUI.Tag;
 using Gravatar;
 using ResourceManager.Translation;

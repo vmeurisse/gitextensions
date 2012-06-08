@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Windows.Forms;
 using GitUI.Editor;
+using GitUI.SettingsControls;
 
 namespace GitUI.Hotkey
 {

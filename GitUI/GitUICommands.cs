@@ -8,6 +8,7 @@ using GitCommands;
 using GitUI.Blame;
 using GitUI.Plugin;
 using GitUI.RepoHosting;
+using GitUI.SettingsControls;
 using GitUI.Tag;
 using GitUIPluginInterfaces;
 using GitUIPluginInterfaces.RepositoryHosts;

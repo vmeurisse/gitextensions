@@ -10,12 +10,11 @@ using System.Windows.Forms;
 using GitCommands;
 using GitCommands.Config;
 using GitUI.Editor;
-using GitUI.Script;
 using Gravatar;
 using Microsoft.Win32;
 using ResourceManager.Translation;
 
-namespace GitUI
+namespace GitUI.SettingsControls
 {
     public sealed partial class FormSettings : GitExtensionsForm
     {
@@ -196,7 +195,6 @@ namespace GitUI
         
         private Font diffFont;
         private const string GitExtensionsShellExName = "GitExtensionsShellEx32.dll";
-        private string IconName = "bug";
 
         public FormSettings()
         {
@@ -327,7 +325,6 @@ namespace GitUI
                 GitCommandHelpers.SetEnvironmentVariable();
                 homeIsSetToLabel.Text = string.Concat(_homeIsSetToString.Text, " ", GitCommandHelpers.GetHomeDir());
 
-                scriptEvent.DataSource = Enum.GetValues(typeof(ScriptEvent));
                 EncodingToCombo(Settings.GetFilesEncoding(false), Global_FilesEncoding);
                 EncodingToCombo(Settings.GetAppEncoding(false, false), Global_AppEncoding);
                 EncodingToCombo(Settings.GetFilesEncoding(true), Local_FilesEncoding);
@@ -517,7 +514,7 @@ namespace GitUI
                 }
 
                 EnableSshOptions();
-                LoadScripts();
+                controlScripts.LoadScripts();
             }
             catch (Exception ex)
             {
@@ -537,7 +534,7 @@ namespace GitUI
 
         private bool Save()
         {
-            SaveScripts();
+            controlScripts.SaveScripts();
 
             if (Settings.RunningOnWindows())
                 FormFixHome.CheckHomePath();
@@ -1333,8 +1330,7 @@ namespace GitUI
             if (AutoFindPuttyPathsInDir("C:\\Program Files (x86)\\TortoiseGit\\bin")) return true;
             if (AutoFindPuttyPathsInDir("C:\\Program Files\\TortoiseSvn\\bin")) return true;
             if (AutoFindPuttyPathsInDir("C:\\Program Files (x86)\\TortoiseSvn\\bin")) return true;
-            if (
-                AutoFindPuttyPathsInDir(GetRegistryValue(Registry.LocalMachine,
+            if (AutoFindPuttyPathsInDir(GetRegistryValue(Registry.LocalMachine,
                                                          "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\PuTTY_is1",
                                                          "InstallLocation"))) return true;
             if (AutoFindPuttyPathsInDir(Settings.GetInstallDir() + "\\PuTTY\\")) return true;
@@ -1604,59 +1600,16 @@ namespace GitUI
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (((TabControl)sender).TabPages[((TabControl)sender).SelectedIndex].Name.ToLower() == "tabpagehotkeys")
+            if (((TabControl)sender).TabPages[((TabControl)sender).SelectedIndex] == tpHotkeys)
                 controlHotkeys.ReloadSettings();
-            else if (((TabControl)sender).TabPages[((TabControl)sender).SelectedIndex].Name.ToLower() == "scriptstab")
-                populateSplitbutton();
-
-
+            else if (((TabControl)sender).TabPages[((TabControl)sender).SelectedIndex] == tpScriptsTab)
+                controlScripts.PopulateSplitButton();
 
             if (GlobalMergeTool.Text.Equals("kdiff3", StringComparison.CurrentCultureIgnoreCase) &&
                 string.IsNullOrEmpty(MergeToolCmd.Text))
                 MergeToolCmd.Enabled = false;
             else
                 MergeToolCmd.Enabled = true;
-        }
-
-        private void populateSplitbutton()
-        {
-
-            System.Resources.ResourceManager rm =
-                new System.Resources.ResourceManager("GitUI.Properties.Resources",
-                            System.Reflection.Assembly.GetExecutingAssembly());
-
-            // dummy request; for some strange reason the ResourceSets are not loaded untill after the first object request... bug?
-            rm.GetObject("dummy");
-
-            System.Resources.ResourceSet resourceSet = rm.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true);
-
-            contextMenuStrip_SplitButton.Items.Clear();
-
-            foreach (System.Collections.DictionaryEntry icon in resourceSet)
-            {
-                //add entry to toolstrip
-                if (icon.Value.GetType() == typeof(Icon))
-                {
-                    //contextMenuStrip_SplitButton.Items.Add(icon.Key.ToString(), (Image)((Icon)icon.Value).ToBitmap(), SplitButtonMenuItem_Click);
-                }
-                else if (icon.Value.GetType() == typeof(Bitmap))
-                {
-                    contextMenuStrip_SplitButton.Items.Add(icon.Key.ToString(), (Image)icon.Value, SplitButtonMenuItem_Click);
-                }
-                //var aa = icon.Value.GetType();
-            }
-
-            resourceSet.Close();
-            rm.ReleaseAllResources();
-
-        }
-
-        public Bitmap ResizeBitmap(Bitmap b, int nWidth, int nHeight)
-        {
-            Bitmap result = new Bitmap(nWidth, nHeight);
-            using (Graphics g = Graphics.FromImage((Image)result))
-                g.DrawImage(b, 0, 0, nWidth, nHeight);
-            return result;
         }
 
         private void ClearImageCache_Click(object sender, EventArgs e)
@@ -2003,139 +1956,6 @@ namespace GitUI
             return !string.IsNullOrEmpty(Settings.Module.RunGitCmd(""));
         }
 
-        private void SaveScripts()
-        {
-            Settings.ownScripts = ScriptManager.SerializeIntoXml();
-        }
-
-        private void LoadScripts()
-        {
-            ScriptList.DataSource = ScriptManager.GetScripts();
-
-        }
-
-        private void ClearScriptDetails()
-        {
-            nameTextBox.Clear();
-            commandTextBox.Clear();
-            argumentsTextBox.Clear();
-            inMenuCheckBox.Checked = false;
-        }
-
-        private void RefreshScriptDetails()
-        {
-            if (ScriptList.SelectedRows.Count == 0)
-                return;
-
-            ScriptInfo scriptInfo = ScriptList.SelectedRows[0].DataBoundItem as ScriptInfo;
-
-            nameTextBox.Text = scriptInfo.Name;
-            commandTextBox.Text = scriptInfo.Command;
-            argumentsTextBox.Text = scriptInfo.Arguments;
-            inMenuCheckBox.Checked = scriptInfo.AddToRevisionGridContextMenu;
-            scriptEnabled.Checked = scriptInfo.Enabled;
-            scriptNeedsConfirmation.Checked = scriptInfo.AskConfirmation;
-            scriptEvent.SelectedItem = scriptInfo.OnEvent;
-            sbtn_icon.Image = scriptInfo.GetIcon();
-            IconName = scriptInfo.Icon;
-
-            foreach (ToolStripItem item in contextMenuStrip_SplitButton.Items)
-            {
-                if (item.ToString() == IconName)
-                {
-                    item.Font = new Font(item.Font, FontStyle.Bold);
-                }
-            }
-        }
-
-        private void addScriptButton_Click(object sender, EventArgs e)
-        {
-            ScriptList.ClearSelection();
-            ScriptManager.GetScripts().AddNew();
-            ScriptList.Rows[ScriptList.RowCount - 1].Selected = true;
-            ScriptList_SelectionChanged(null, null);//needed for linux
-        }
-
-        private void removeScriptButton_Click(object sender, EventArgs e)
-        {
-            if (ScriptList.SelectedRows.Count > 0)
-            {
-                ScriptManager.GetScripts().Remove(ScriptList.SelectedRows[0].DataBoundItem as ScriptInfo);
-
-                ClearScriptDetails();
-            }
-        }
-
-
-        private void ScriptInfoFromEdits()
-        {
-            if (ScriptList.SelectedRows.Count > 0)
-            {
-                ScriptInfo selectedScriptInfo = ScriptList.SelectedRows[0].DataBoundItem as ScriptInfo;
-                selectedScriptInfo.HotkeyCommandIdentifier = ScriptList.SelectedRows[0].Index + 9000;
-                selectedScriptInfo.Name = nameTextBox.Text;
-                selectedScriptInfo.Command = commandTextBox.Text;
-                selectedScriptInfo.Arguments = argumentsTextBox.Text;
-                selectedScriptInfo.AddToRevisionGridContextMenu = inMenuCheckBox.Checked;
-                selectedScriptInfo.Enabled = scriptEnabled.Checked;
-                selectedScriptInfo.AskConfirmation = scriptNeedsConfirmation.Checked;
-                selectedScriptInfo.OnEvent = (ScriptEvent)scriptEvent.SelectedItem;
-                selectedScriptInfo.Icon = IconName;
-            }
-        }
-
-        private void moveUpButton_Click(object sender, EventArgs e)
-        {
-            if (ScriptList.SelectedRows.Count > 0)
-            {
-                ScriptInfo scriptInfo = ScriptList.SelectedRows[0].DataBoundItem as ScriptInfo;
-                int index = ScriptManager.GetScripts().IndexOf(scriptInfo);
-                ScriptManager.GetScripts().Remove(scriptInfo);
-                ScriptManager.GetScripts().Insert(Math.Max(index - 1, 0), scriptInfo);
-
-                ScriptList.ClearSelection();
-                ScriptList.Rows[Math.Max(index - 1, 0)].Selected = true;
-                ScriptList.Focus();
-            }
-        }
-
-        private void moveDownButton_Click(object sender, EventArgs e)
-        {
-            if (ScriptList.SelectedRows.Count > 0)
-            {
-                ScriptInfo scriptInfo = ScriptList.SelectedRows[0].DataBoundItem as ScriptInfo;
-                int index = ScriptManager.GetScripts().IndexOf(scriptInfo);
-                ScriptManager.GetScripts().Remove(scriptInfo);
-                ScriptManager.GetScripts().Insert(Math.Min(index + 1, ScriptManager.GetScripts().Count), scriptInfo);
-
-                ScriptList.ClearSelection();
-                ScriptList.Rows[Math.Max(index + 1, 0)].Selected = true;
-                ScriptList.Focus();
-            }
-        }
-
-        private void browseScriptButton_Click(object sender, EventArgs e)
-        {
-            var ofd = new OpenFileDialog
-                          {
-                              InitialDirectory = "c:\\",
-                              Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*",
-                              RestoreDirectory = true
-                          };
-            if (ofd.ShowDialog(this) == DialogResult.OK)
-                commandTextBox.Text = ofd.FileName;
-        }
-
-        private void argumentsTextBox_Enter(object sender, EventArgs e)
-        {
-            helpLabel.Visible = true;
-        }
-
-        private void argumentsTextBox_Leave(object sender, EventArgs e)
-        {
-            helpLabel.Visible = false;
-        }
-
         private void translationConfig_Click(object sender, EventArgs e)
         {
             new FormChooseTranslation().ShowDialog(this);
@@ -2147,39 +1967,6 @@ namespace GitUI
         private void downloadDictionary_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Process.Start(@"https://github.com/spdr870/gitextensions/wiki/Spelling");
-        }
-
-        private void ScriptList_SelectionChanged(object sender, EventArgs e)
-        {
-            if (ScriptList.SelectedRows.Count > 0)
-            {
-                RefreshScriptDetails();
-
-                removeScriptButton.Enabled = true;
-                moveDownButton.Enabled = moveUpButton.Enabled = false;
-                if (ScriptList.SelectedRows[0].Index > 0)
-                    moveUpButton.Enabled = true;
-                if (ScriptList.SelectedRows[0].Index < ScriptList.RowCount - 1)
-                    moveDownButton.Enabled = true;
-            }
-            else
-            {
-                removeScriptButton.Enabled = false;
-                moveUpButton.Enabled = false;
-                moveDownButton.Enabled = false;
-                ClearScriptDetails();
-            }
-        }
-
-        private void ScriptInfoEdit_Validating(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            ScriptInfoFromEdits();
-            ScriptList.Refresh();
-        }
-
-        private void ScriptList_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            ScriptList_SelectionChanged(null, null);//needed for linux
         }
 
         #region Hotkey commands
@@ -2301,47 +2088,6 @@ namespace GitUI
         private void BrowseCommitTemplate_Click(object sender, EventArgs e)
         {
             CommitTemplatePath.Text = SelectFile(".", "*.txt (*.txt)|*.txt", CommitTemplatePath.Text);
-        }
-
-        private void SplitButtonMenuItem_Click(object sender, EventArgs e)
-        {
-            //reset bold item to regular
-            var item = contextMenuStrip_SplitButton.Items.OfType<ToolStripMenuItem>().First(s => s.Font.Bold);
-            item.Font = new Font(contextMenuStrip_SplitButton.Font, FontStyle.Regular);
-
-            //make new item bold
-            ((ToolStripMenuItem)sender).Font = new Font(((ToolStripMenuItem)sender).Font, FontStyle.Bold);
-
-            //set new image on button
-            sbtn_icon.Image = ResizeBitmap((Bitmap)((ToolStripMenuItem)sender).Image, 12, 12);
-
-            IconName = ((ToolStripMenuItem)sender).Text;
-
-            //store variables
-            ScriptInfoEdit_Validating(sender, new System.ComponentModel.CancelEventArgs());
-        }
-
-        private void scriptEvent_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (scriptEvent.Text == ScriptEvent.ShowInUserMenuBar.ToString())
-            {
-                /*
-                string icon_name = IconName;
-                if (ScriptList.RowCount > 0)
-                {
-                    ScriptInfo scriptInfo = ScriptList.SelectedRows[0].DataBoundItem as ScriptInfo;
-                    icon_name = scriptInfo.Icon;
-                }*/
-
-                sbtn_icon.Visible = true;
-                lbl_icon.Visible = true;
-            }
-            else
-            {
-                //not a menubar item, so hide the text label and dropdown button
-                sbtn_icon.Visible = false;
-                lbl_icon.Visible = false;
-            }
         }
 
         private void downloadMsysgit_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

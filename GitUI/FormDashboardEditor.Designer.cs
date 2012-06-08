@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.dashboardEditor1 = new GitUI.DashboardEditor();
+            this.dashboardEditor1 = new GitUI.SettingsControls.ControlDashboardEditor();
             this.SuspendLayout();
             // 
             // dashboardEditor1
@@ -56,6 +56,6 @@
 
         #endregion
 
-        private DashboardEditor dashboardEditor1;
+        private GitUI.SettingsControls.ControlDashboardEditor dashboardEditor1;
     }
 }
