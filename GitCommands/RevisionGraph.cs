@@ -104,12 +104,11 @@ namespace GitCommands
         {
             if (BackgroundThread)
             {
-                backgroundLoader.Load(execute, executed);
+                backgroundLoader.Load(execute, null);
             }
             else
             {
-                execute(new FixedLoadingTaskState(false));
-                executed();
+                execute(new FixedLoadingTaskState(false));                
             }
         }
 
@@ -118,86 +117,32 @@ namespace GitCommands
             RevisionCount = 0;
             heads = GetHeads().ToDictionaryOfList(head => head.Guid);
 
-            string formatString =
-                /* <COMMIT>       */ COMMIT_BEGIN + "%n" +
-                /* Hash           */ "%H%n" +
-                /* Parents        */ "%P%n";
-            if (!ShaOnly)
+            using (var repo = new LibGit2Sharp.Repository(Module.WorkingDir))
             {
-                formatString +=
-                    /* Tree                    */ "%T%n" +
-                    /* Author Name             */ "%aN%n" +
-                    /* Author Email            */ "%aE%n" +
-                    /* Author Date             */ "%at%n" +
-                    /* Committer Name          */ "%cN%n" +
-                    /* Committer Date          */ "%ct%n" +
-                    /* Commit message encoding */ "%e%n" + //there is a bug: git does not recode commit message when format is given
-                    /* Commit Message          */ "%s";
-            }
-
-            // NOTE:
-            // when called from FileHistory and FollowRenamesInFileHistory is enabled the "--name-only" argument is set.
-            // the filename is the next line after the commit-format defined above.
-
-            if (Settings.OrderRevisionByDate)
-            {
-                LogParam = " --date-order " + LogParam;
-            }
-            else
-            {
-                LogParam = " --topo-order " + LogParam;
-            }
-
-            string arguments = String.Format(CultureInfo.InvariantCulture,
-                "log -z {2} --pretty=format:\"{1}\" {0}",
-                LogParam,
-                formatString,
-                BranchFilter);
-
-            using (GitCommandsInstance gitGetGraphCommand = new GitCommandsInstance(Module))
-            {
-                gitGetGraphCommand.StreamOutput = true;
-                gitGetGraphCommand.CollectOutput = false;
-                Encoding LogOutputEncoding = Module.LogOutputEncoding;
-                gitGetGraphCommand.SetupStartInfoCallback = startInfo =>
+                foreach (var commit in repo.Commits.Where(p => true))
                 {
-                    startInfo.StandardOutputEncoding = GitModule.LosslessEncoding;
-                    startInfo.StandardErrorEncoding = GitModule.LosslessEncoding;
-                };
+                    GitRevision revision = new GitRevision(Module, null);
+                    revision.Author = commit.Author.Name;
+                    revision.AuthorDate = commit.Author.When.UtcDateTime;
+                    revision.AuthorEmail = commit.Author.Email;
+                    revision.CommitDate = commit.Committer.When.UtcDateTime;
+                    revision.Committer = commit.Committer.Name;
+                    revision.Guid = commit.Id.Sha;
+                    
+                    List<GitHead> headList;
+                    if (heads.TryGetValue(revision.Guid, out headList))
+                        revision.Heads.AddRange(headList);
+                    revision.Message = commit.MessageShort;
+                    //revision.MessageEncoding = ??
+                    revision.TreeGuid = commit.Tree.Sha;
+                    revision.ParentGuids = commit.Parents.Select(p => p.Sha).ToArray();
 
-                Process p = gitGetGraphCommand.CmdStartProcess(Settings.GitCommand, arguments);
-                
-                if (taskState.IsCanceled())
-                    return;
+                    RevisionCount++;
 
-                previousFileName = null;
-                if (BeginUpdate != null)
-                    BeginUpdate(this, EventArgs.Empty);
-
-                string line;
-                do
-                {
-                    line = p.StandardOutput.ReadLine();
-                    //commit message is not encoded by git
-                    if (nextStep != ReadStep.CommitMessage)
-                        line = GitModule.ReEncodeString(line, GitModule.LosslessEncoding, LogOutputEncoding);
-
-                    if (line != null)
-                    {
-                        foreach (string entry in line.Split('\0'))
-                        {
-                            dataReceived(entry);
-                        }
-                    }
-                } while (line != null && !taskState.IsCanceled());
-
+                    if (Updated != null)
+                        Updated(this, new RevisionGraphUpdatedEventArgs(revision));
+                }
             }
-        }
-
-        private void executed()
-        {
-            finishRevision();
-            previousFileName = null;
 
             if (Exited != null)
                 Exited(this, EventArgs.Empty);            
@@ -226,120 +171,6 @@ namespace GitCommands
             }
 
             return result;
-        }
-
-        private string previousFileName = null;
-
-        void finishRevision()
-        {
-            if (revision != null)
-            {
-                if (revision.Name == null)                
-                    revision.Name = previousFileName;
-                else
-                    previousFileName = revision.Name;
-            }
-            if (revision == null || revision.Guid.Trim(hexChars).Length == 0)
-            {
-                if ((revision == null) || (InMemFilter == null) || InMemFilter.PassThru(revision))
-                {
-                    if (revision != null)
-                        RevisionCount++;
-                    if (Updated != null)
-                        Updated(this, new RevisionGraphUpdatedEventArgs(revision));
-                }
-            }
-            nextStep = ReadStep.Commit;
-        }
-
-        void dataReceived(string line)
-        {
-            if (line == null)
-                return;
-
-            if (line == COMMIT_BEGIN)
-            {
-                // a new commit finalizes the last revision
-                finishRevision();
-
-                nextStep = ReadStep.Commit;
-            }
-
-            switch (nextStep)
-            {
-                case ReadStep.Commit:
-                    // Sanity check
-                    if (line == COMMIT_BEGIN)
-                    {
-                        revision = new GitRevision(Module, null);
-                    }
-                    else
-                    {
-                        // Bail out until we see what we expect
-                        return;
-                    }
-                    break;
-
-                case ReadStep.Hash:
-                    revision.Guid = line;
-
-                    List<GitHead> headList;
-                    if (heads.TryGetValue(revision.Guid, out headList))
-                        revision.Heads.AddRange(headList);
-                    
-                    break;
-
-                case ReadStep.Parents:
-                    revision.ParentGuids = line.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
-                    break;
-
-                case ReadStep.Tree:
-                    revision.TreeGuid = line;
-                    break;
-
-                case ReadStep.AuthorName:
-                    revision.Author = line;
-                    break;
-
-                case ReadStep.AuthorEmail:
-                    revision.AuthorEmail = line;
-                    break;
-
-                case ReadStep.AuthorDate:
-                    {
-                        DateTime dateTime;
-                        if (DateTimeUtils.TryParseUnixTime(line, out dateTime))
-                            revision.AuthorDate = dateTime;
-                    }
-                    break;
-
-                case ReadStep.CommitterName:
-                    revision.Committer = line;
-                    break;
-
-                case ReadStep.CommitterDate:
-                    {
-                        DateTime dateTime;
-                        if (DateTimeUtils.TryParseUnixTime(line, out dateTime))
-                            revision.CommitDate = dateTime;
-                    }
-                    break;
-
-                case ReadStep.CommitMessageEncoding:
-                    revision.MessageEncoding = line;
-                    break;
-                
-                case ReadStep.CommitMessage:
-                    revision.Message = Module.ReEncodeCommitMessage(line, revision.MessageEncoding);
-
-                    break;
-
-                case ReadStep.FileName:
-                    revision.Name = line;
-                    break;
-            }
-
-            nextStep++;
         }
     }
 }
