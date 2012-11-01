@@ -1795,7 +1795,7 @@ namespace GitUI
 
         private void TranslateToolStripMenuItemClick(object sender, EventArgs e)
         {
-            using (var frm = new FormTranslate()) frm.ShowDialog(this);
+            Process.Start("TranslationApp.exe");
         }
 
         private void FileExplorerToolStripMenuItemClick(object sender, EventArgs e)

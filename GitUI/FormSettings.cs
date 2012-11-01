@@ -1732,7 +1732,7 @@ namespace GitUI
 
         private void helpTranslate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            using (var frm = new FormTranslate()) frm.ShowDialog(this);
+            Process.Start("TranslationApp.exe");
         }
 
         private void MulticolorBranches_CheckedChanged(object sender, EventArgs e)
