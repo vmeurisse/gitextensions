@@ -14,7 +14,7 @@ namespace GitUI
     {
         private readonly FilterRevisionsHelper filterRevisionsHelper;
         private readonly FilterBranchHelper filterBranchHelper;
-        private AsyncLoader asyncLoader = new AsyncLoader();
+        private AsyncLoader asyncLoader;
 
         private FormFileHistory()
             : this(null)
@@ -24,7 +24,7 @@ namespace GitUI
             : base(aCommands)
         {
             InitializeComponent();
-
+            asyncLoader = new AsyncLoader();
             // set tab page images
             {
                 var imageList = new ImageList();
@@ -107,7 +107,7 @@ namespace GitUI
             if (string.IsNullOrEmpty(fileName))
                 return null;
 
-            //Replace windows path seperator to linux path seperator. 
+            //Replace windows path separator to Linux path separator. 
             //This is needed to keep the file history working when started from file tree in
             //browse dialog.
             fileName = fileName.Replace('\\', '/');
@@ -274,7 +274,7 @@ namespace GitUI
             {
                 orgFileName = selectedRows[0].Name;
             }
-            FileChanges.OpenWithDifftool(FileName, orgFileName, GitUIExtensions.DiffWithRevisionKind.DiffAsSelected);
+            FileChanges.OpenWithDifftool(FileName, orgFileName, GitUIExtensions.DiffWithRevisionKind.DiffAB);
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -369,7 +369,7 @@ namespace GitUI
 
         private void diffToolremotelocalStripMenuItem_Click(object sender, EventArgs e)
         {
-            FileChanges.OpenWithDifftool(FileName, string.Empty, GitUIExtensions.DiffWithRevisionKind.DiffRemoteLocal);
+            FileChanges.OpenWithDifftool(FileName, string.Empty, GitUIExtensions.DiffWithRevisionKind.DiffBLocal);
         }
 
         private void toolStripSplitLoad_ButtonClick(object sender, EventArgs e)

@@ -48,6 +48,23 @@ namespace GitUI
         private bool errorOccurred;
         private bool showOnError;
 
+        private const int CP_NOCLOSE_BUTTON = 0x200;
+        protected override CreateParams CreateParams
+        {
+
+            get
+            {
+
+                CreateParams mdiCp = base.CreateParams;
+
+                mdiCp.ClassStyle = mdiCp.ClassStyle | CP_NOCLOSE_BUTTON;
+
+                return mdiCp;
+
+            }
+
+        }
+
         public bool ErrorOccurred()
         {
             return errorOccurred;
@@ -68,16 +85,16 @@ namespace GitUI
 
 #if !__MonoCS__
                         if (GitCommands.Settings.RunningOnWindows() && TaskbarManager.IsPlatformSupported)
+                        {
+                            try
                             {
-                                try
-                                {
-                                    TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Normal);
-                                    TaskbarManager.Instance.SetProgressValue(progressValue, 100);
-                                }
-                                catch (InvalidOperationException)
-                                {
-                                }
+                                TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Normal);
+                                TaskbarManager.Instance.SetProgressValue(progressValue, 100);
                             }
+                            catch (InvalidOperationException)
+                            {
+                            }
+                        }
 #endif
                     }
                     Text = text;

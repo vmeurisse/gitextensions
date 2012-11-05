@@ -120,7 +120,7 @@ namespace GitUI
         private bool IsMergeCommit { get; set; }
         private bool shouldRescanChanges = true;
         private bool _shouldReloadCommitTemplates = true;
-        private AsyncLoader unstagedLoader = new AsyncLoader();
+        private AsyncLoader unstagedLoader;
         private bool _useFormCommitMessage;
         private CancellationTokenSource interactiveAddBashCloseWaitCTS;
 
@@ -140,6 +140,8 @@ namespace GitUI
             : base(true, aCommands)
         {
             _syncContext = SynchronizationContext.Current;
+
+            unstagedLoader = new AsyncLoader(_syncContext);
 
             _useFormCommitMessage = Settings.UseFormCommitMessage;
 
@@ -186,6 +188,7 @@ namespace GitUI
             _StageSelectedLinesToolStripMenuItem.ShortcutKeyDisplayString = GetShortcutKeys((int)Commands.StageSelectedFile).ToShortcutKeyDisplayString();
             _ResetSelectedLinesToolStripMenuItem = SelectedDiff.AddContextMenuEntry(_resetSelectedLines.Text, ResetSelectedLinesToolStripMenuItemClick);
             _ResetSelectedLinesToolStripMenuItem.ShortcutKeyDisplayString = GetShortcutKeys((int)Commands.ResetSelectedFiles).ToShortcutKeyDisplayString();
+            _ResetSelectedLinesToolStripMenuItem.Image = Reset.Image;
         }
 
         private void FormCommit_Load(object sender, EventArgs e)
@@ -209,7 +212,7 @@ namespace GitUI
 
         void SelectedDiff_ContextMenuOpening(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _StageSelectedLinesToolStripMenuItem.Enabled = SelectedDiff.HasAnyPatches();
+            _StageSelectedLinesToolStripMenuItem.Enabled = SelectedDiff.HasAnyPatches() || _currentItem != null && _currentItem.IsNew;
             _ResetSelectedLinesToolStripMenuItem.Enabled = _StageSelectedLinesToolStripMenuItem.Enabled;
         }
 
@@ -320,7 +323,7 @@ namespace GitUI
                 UnstageFilesClick(this, null);
                 return true;
             }
-            else if (SelectedDiff.ContainsFocus && _currentItemStaged)
+            else if (SelectedDiff.ContainsFocus && _currentItemStaged && _StageSelectedLinesToolStripMenuItem.Enabled)
             {
                 StageSelectedLinesToolStripMenuItemClick(this, null);
                 return true;
@@ -363,7 +366,7 @@ namespace GitUI
         private void ComputeUnstagedFiles(Action<List<GitItemStatus>> onComputed)
         {
             unstagedLoader.Load(() =>
-                Module.GetAllChangedFiles(
+                Module.GetAllChangedFilesWithSubmodulesStatus(
                     !showIgnoredFilesToolStripMenuItem.Checked,
                     showUntrackedFilesToolStripMenuItem.Checked),
                     onComputed);
@@ -390,28 +393,39 @@ namespace GitUI
             );
         }
 
+        private bool selectedDiffReloaded = true;
+
         private void StageSelectedLinesToolStripMenuItemClick(object sender, EventArgs e)
         {
+            //to prevent multiple clicks
+            if (!selectedDiffReloaded)
+                return;
+
+            Debug.Assert(_currentItem != null);
             // Prepare git command
-            string args = "apply --cached --whitespace=nowarn --inaccurate-eof";
+            string args = "apply --cached --whitespace=nowarn";
 
             if (_currentItemStaged) //staged
                 args += " --reverse";
-
-            byte[] patch = PatchManager.GetSelectedLinesAsPatch(SelectedDiff.GetText(), SelectedDiff.GetSelectionPosition(), SelectedDiff.GetSelectionLength(), _currentItemStaged, SelectedDiff.Encoding);
+            byte[] patch;
+            if (!_currentItemStaged && _currentItem.IsNew)
+                patch = PatchManager.GetSelectedLinesAsNewPatch(Module, _currentItem.Name, SelectedDiff.GetText(), SelectedDiff.GetSelectionPosition(), SelectedDiff.GetSelectionLength(), SelectedDiff.Encoding, false);
+            else
+                patch = PatchManager.GetSelectedLinesAsPatch(Module, SelectedDiff.GetText(), SelectedDiff.GetSelectionPosition(), SelectedDiff.GetSelectionLength(), _currentItemStaged, SelectedDiff.Encoding, _currentItem.IsNew);
 
             if (patch != null && patch.Length > 0)
             {
                 string output = Module.RunGitCmd(args, patch);
                 if (!string.IsNullOrEmpty(output))
                 {
-                    MessageBox.Show(this, output);
+                    MessageBox.Show(this, output + "\n\n" + SelectedDiff.Encoding.GetString(patch));
                 }
                 if (_currentItemStaged)
                     Staged.StoreNextIndexToSelect();
                 else
                     Unstaged.StoreNextIndexToSelect();
                 ScheduleGoToLine();
+                selectedDiffReloaded = false;
                 RescanChanges();                
             }
         }
@@ -419,24 +433,40 @@ namespace GitUI
         private void ScheduleGoToLine()
         {
             int SelectedDifflineToSelect = SelectedDiff.GetText().Substring(0, SelectedDiff.GetSelectionPosition()).Count(c => c == '\n');
+            int scrollPosition = SelectedDiff.ScrollPos;
             string selectedFileName = _currentItem.Name;
-            EventHandler textLoaded = null;
-            textLoaded = (a, b) =>
+            Action stageAreaLoaded = null;
+            stageAreaLoaded = () =>
             {
-                if (_currentItem != null && _currentItem.Name.Equals(selectedFileName))
-                    SelectedDiff.GoToLine(SelectedDifflineToSelect);
-                SelectedDiff.TextLoaded -= textLoaded;
+                EventHandler textLoaded = null;
+                textLoaded = (a, b) =>
+                    {
+                        if (_currentItem != null && _currentItem.Name.Equals(selectedFileName))
+                        {
+                            SelectedDiff.GoToLine(SelectedDifflineToSelect);
+                            SelectedDiff.ScrollPos = scrollPosition;
+                        }
+                        SelectedDiff.TextLoaded -= textLoaded;
+                        selectedDiffReloaded = true;
+                    };
+                SelectedDiff.TextLoaded += textLoaded;
+                OnStageAreaLoaded -= stageAreaLoaded;
             };
 
-            SelectedDiff.TextLoaded += textLoaded;
+            OnStageAreaLoaded += stageAreaLoaded;
         }
 
         private void ResetSelectedLinesToolStripMenuItemClick(object sender, EventArgs e)
         {
+            //to prevent multiple clicks
+            if (!selectedDiffReloaded)
+                return;
+
             if (MessageBox.Show(this, _resetSelectedLinesConfirmation.Text, _resetChangesCaption.Text,
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
                 return;
 
+            Debug.Assert(_currentItem != null);
             // Prepare git command
             string args = "apply --whitespace=nowarn";
 
@@ -446,19 +476,32 @@ namespace GitUI
            byte[] patch;
 
            if (_currentItemStaged)
-               patch = PatchManager.GetSelectedLinesAsPatch(SelectedDiff.GetText(), SelectedDiff.GetSelectionPosition(), SelectedDiff.GetSelectionLength(), _currentItemStaged, SelectedDiff.Encoding);
+               patch = PatchManager.GetSelectedLinesAsPatch(Module, SelectedDiff.GetText(), SelectedDiff.GetSelectionPosition(), SelectedDiff.GetSelectionLength(), _currentItemStaged, SelectedDiff.Encoding, _currentItem.IsNew);
            else
-               patch = PatchManager.GetResetUnstagedLinesAsPatch(Module, SelectedDiff.GetText(), SelectedDiff.GetSelectionPosition(), SelectedDiff.GetSelectionLength(), _currentItemStaged, SelectedDiff.Encoding);
+               if (_currentItem.IsNew)
+                   patch = PatchManager.GetSelectedLinesAsNewPatch(Module, _currentItem.Name, SelectedDiff.GetText(), SelectedDiff.GetSelectionPosition(), SelectedDiff.GetSelectionLength(), SelectedDiff.Encoding, true);
+               else
+                   patch = PatchManager.GetResetUnstagedLinesAsPatch(Module, SelectedDiff.GetText(), SelectedDiff.GetSelectionPosition(), SelectedDiff.GetSelectionLength(), _currentItemStaged, SelectedDiff.Encoding);
 
             if (patch != null && patch.Length > 0)
             {
                 string output = Module.RunGitCmd(args, patch);
+                if (Settings.RunningOnWindows())
+                {
+                    //remove file mode warnings on windows
+                    Regex regEx = new Regex("warning: .*has type .* expected .*", RegexOptions.Compiled);
+                    output = output.RemoveLines(line => regEx.IsMatch(line));
+                }
                 if (!string.IsNullOrEmpty(output))
                 {
                     MessageBox.Show(this, output + "\n\n" + SelectedDiff.Encoding.GetString(patch));
                 }
-                Staged.StoreNextIndexToSelect();
+                if (_currentItemStaged)
+                    Staged.StoreNextIndexToSelect();
+                else
+                    Unstaged.StoreNextIndexToSelect();
                 ScheduleGoToLine();
+                selectedDiffReloaded = false;
                 RescanChanges();
             }
         }
@@ -529,6 +572,8 @@ namespace GitUI
             Cursor.Current = Cursors.Default;
         }
 
+        private event Action OnStageAreaLoaded;
+
         private bool LoadUnstagedOutputFirstTime = true;
 
         /// <summary>
@@ -569,6 +614,9 @@ namespace GitUI
             Unstaged.SelectStoredNextIndex();
             Staged.SelectStoredNextIndex();
 
+            if (OnStageAreaLoaded != null)
+                OnStageAreaLoaded();
+
             if (LoadUnstagedOutputFirstTime)
             {
                 if (Unstaged.GitItemStatuses.Count > 0)
@@ -606,9 +654,9 @@ namespace GitUI
             }
 
             _StageSelectedLinesToolStripMenuItem.Text = staged ? _unstageSelectedLines.Text : _stageSelectedLines.Text;
+            _StageSelectedLinesToolStripMenuItem.Image = staged ? toolUnstageItem.Image : toolStageItem.Image;
             _StageSelectedLinesToolStripMenuItem.ShortcutKeyDisplayString = 
                 GetShortcutKeys((int) (staged ? Commands.UnStageSelectedFile : Commands.StageSelectedFile)).ToShortcutKeyDisplayString();
-            //_ResetSelectedLinesToolStripMenuItem.Enabled = staged;
         }
 
         private long GetItemLength(string fileName)

@@ -79,8 +79,11 @@ namespace GitUI
         private readonly TranslationString _UnsupportedMultiselectAction =
             new TranslationString("Operation not supported");
 
-        private readonly TranslationString alwaysShowCheckoutDlgStr =
+        private readonly TranslationString _alwaysShowCheckoutDlgStr =
             new TranslationString("Always show checkout dialog");
+
+        private readonly TranslationString _updateCurrentSubmodule =
+            new TranslationString("Update current submodule");
 
         #endregion
 
@@ -163,7 +166,7 @@ namespace GitUI
             GitTree.ImageList = new ImageList();
             GitTree.ImageList.Images.Add(Properties.Resources.New); //File
             GitTree.ImageList.Images.Add(Properties.Resources.Folder); //Folder
-            GitTree.ImageList.Images.Add(Properties.Resources.Submodule); //Submodule
+            GitTree.ImageList.Images.Add(Properties.Resources.IconFolderSubmodule); //Submodule
 
             GitTree.MouseDown += GitTree_MouseDown;
             GitTree.MouseMove += GitTree_MouseMove;
@@ -950,9 +953,10 @@ namespace GitUI
                 return;
 
             var revision = RevisionGrid.GetSelectedRevisions()[0];
+            var children = RevisionGrid.GetRevisionChildren(revision.Guid);
 
             if (revision != null)
-                RevisionInfo.SetRevision(revision.Guid);
+                RevisionInfo.SetRevisionWithChildren(revision.Guid, children);
         }
 
         public void FileHistoryOnClick(object sender, EventArgs e)
@@ -1346,8 +1350,17 @@ namespace GitUI
 
         private void CherryPickToolStripMenuItemClick(object sender, EventArgs e)
         {
-            if (UICommands.StartCherryPickDialog(this))
+            var revisions = RevisionGrid.GetSelectedRevisions();
+            if (revisions.Count != 1)
+            {
+                MessageBox.Show("Select exactly one revision.");
+                return;
+            }
+
+            if (UICommands.StartCherryPickDialog(this, revisions.First()))
+            {
                 Initialize();
+            }
         }
 
         private void MergeBranchToolStripMenuItemClick(object sender, EventArgs e)
@@ -1442,7 +1455,7 @@ namespace GitUI
 
         private void CompressGitDatabaseToolStripMenuItemClick(object sender, EventArgs e)
         {
-            FormProcess.ShowDialog(this, "gc");
+            FormProcess.ShowModeless(this, "gc");
         }
 
         private void VerifyGitDatabaseToolStripMenuItemClick(object sender, EventArgs e)
@@ -1550,6 +1563,14 @@ namespace GitUI
         {
             if (UICommands.StartSubmodulesDialog(this))
                 Initialize();
+        }
+        
+        private void UpdateSubmoduleToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var submodule = (sender as ToolStripMenuItem).Tag as string;
+            FormProcess.ShowDialog(this, Module.SuperprojectModule,
+                GitCommandHelpers.SubmoduleUpdateCmd(submodule));
+            Initialize();
         }
 
         private void UpdateAllSubmodulesToolStripMenuItemClick(object sender, EventArgs e)
@@ -1677,12 +1698,19 @@ namespace GitUI
             var selectedItem = DiffFiles.SelectedItem;
             GitUIExtensions.DiffWithRevisionKind diffKind;
 
-            if (sender == diffBaseLocalToolStripMenuItem)
-                diffKind = GitUIExtensions.DiffWithRevisionKind.DiffBaseLocal;
-            else if (sender == difftoolRemoteLocalToolStripMenuItem)
-                diffKind = GitUIExtensions.DiffWithRevisionKind.DiffRemoteLocal;
+            if (sender == aLocalToolStripMenuItem)
+                diffKind = GitUIExtensions.DiffWithRevisionKind.DiffALocal;
+            else if (sender == bLocalToolStripMenuItem)
+                diffKind = GitUIExtensions.DiffWithRevisionKind.DiffBLocal;
+            else if (sender == parentOfALocalToolStripMenuItem)
+                diffKind = GitUIExtensions.DiffWithRevisionKind.DiffAParentLocal;
+            else if (sender == parentOfBLocalToolStripMenuItem)
+                diffKind = GitUIExtensions.DiffWithRevisionKind.DiffBParentLocal;
             else
-                diffKind = GitUIExtensions.DiffWithRevisionKind.DiffAsSelected;
+            {
+                Debug.Assert(sender == aBToolStripMenuItem, "Not implemented DiffWithRevisionKind: " + sender);
+                diffKind = GitUIExtensions.DiffWithRevisionKind.DiffAB;
+            }
 
             RevisionGrid.OpenWithDifftool(selectedItem.Name, selectedItem.OldName, diffKind);
         }
@@ -2023,7 +2051,7 @@ namespace GitUI
             branchSelect.DropDownItems.Add(item);
             item.Click += (hs, he) => CheckoutBranchToolStripMenuItemClick(hs, he);
 
-            ToolStripMenuItem alwaysShowCheckoutDlg = new ToolStripMenuItem(alwaysShowCheckoutDlgStr.Text);
+            ToolStripMenuItem alwaysShowCheckoutDlg = new ToolStripMenuItem(_alwaysShowCheckoutDlgStr.Text);
             alwaysShowCheckoutDlg.Checked = Settings.AlwaysShowCheckoutBranchDlg;
             branchSelect.DropDownItems.Add(alwaysShowCheckoutDlg);
             alwaysShowCheckoutDlg.Click += (hs, he) =>
@@ -2316,6 +2344,28 @@ namespace GitUI
             }
         }
 
+        private void fileTreeOpenContainingFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var gitItem = GitTree.SelectedNode.Tag as GitItem;
+            if (gitItem == null)
+            {
+                return;
+            }
+
+            var filePath = Module.WorkingDir + gitItem.FileName;
+            // needed?
+            ////    var fileNames = new StringBuilder();
+            ////    fileNames.Append((Module.WorkingDir + item.Name).Replace(Settings.PathSeparatorWrong, Settings.PathSeparator));
+            if (File.Exists(filePath))
+            {
+                Process.Start("explorer.exe", "/select," + filePath);
+            }
+            else if (Directory.Exists(filePath))
+            {
+                Process.Start("explorer.exe", filePath);
+            }
+        }
+
         private void DiffContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             bool artificialRevSelected;
@@ -2337,15 +2387,11 @@ namespace GitUI
                 if (File.Exists(fileNames.ToString()))
                 {
                     openContainingFolderToolStripMenuItem.Enabled = true;
-                    diffBaseLocalToolStripMenuItem.Enabled = !artificialRevSelected;
-                    difftoolRemoteLocalToolStripMenuItem.Enabled = !artificialRevSelected;
                     return;
                 }
             }
 
             openContainingFolderToolStripMenuItem.Enabled = false;
-            diffBaseLocalToolStripMenuItem.Enabled = false;
-            difftoolRemoteLocalToolStripMenuItem.Enabled = false;
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -2613,16 +2659,16 @@ namespace GitUI
                 CheckoutBranchToolStripMenuItemClick(sender, e);
         }
 
-        private void RevisionInfo_CommandClick(string command, string data)
+        private void RevisionInfo_CommandClick(object sender, CommandEventArgs e)
         {
-            if (command == "gotocommit")
+            if (e.Command == "gotocommit")
             {
-                RevisionGrid.SetSelectedRevision(new GitRevision(Module, data));
+                RevisionGrid.SetSelectedRevision(new GitRevision(Module, e.Data));
             }
-            else if (command == "gotobranch" || command == "gototag")
+            else if (e.Command == "gotobranch" || e.Command == "gototag")
             {
                 string error = "";
-                CommitData commit = CommitData.GetCommitData(Module, data, ref error);
+                CommitData commit = CommitData.GetCommitData(Module, e.Data, ref error);
                 if (commit != null)
                     RevisionGrid.SetSelectedRevision(new GitRevision(Module, commit.Guid));
             }
@@ -2685,10 +2731,11 @@ namespace GitUI
             if (!containSubmodules)
                 toolStripButtonLevelUp.DropDownItems.Add(_noSubmodulesPresent.Text);
 
+            string currentSubmoduleName = null;
             if (Module.SuperprojectModule != null)
             {
-                var separator = new ToolStripSeparator();
-                toolStripButtonLevelUp.DropDownItems.Add(separator);
+                var superprojectSeparator = new ToolStripSeparator();
+                toolStripButtonLevelUp.DropDownItems.Add(superprojectSeparator);
 
                 {
                     var name = "Superproject";
@@ -2720,7 +2767,10 @@ namespace GitUI
 
                         var submenu = new ToolStripMenuItem(name);
                         if (submodule == localpath)
+                        {
+                            currentSubmoduleName = submodule;
                             submenu.Font = new Font(submenu.Font, FontStyle.Bold);
+                        }
                         submenu.Click += SubmoduleToolStripButtonClick;
                         submenu.Tag = path;
                         submenu.Width = 200;
@@ -2729,15 +2779,20 @@ namespace GitUI
                 }
             }
 
-            if (containSubmodules)
-            {
-                var separator = new ToolStripSeparator();
-                toolStripButtonLevelUp.DropDownItems.Add(separator);
+            var separator = new ToolStripSeparator();
+            toolStripButtonLevelUp.DropDownItems.Add(separator);
 
-                var mi = new ToolStripMenuItem(updateAllSubmodulesToolStripMenuItem.Text);
-                mi.Click += UpdateAllSubmodulesToolStripMenuItemClick;
-                toolStripButtonLevelUp.DropDownItems.Add(mi);
+            if (currentSubmoduleName != null)
+            {
+                var usmi = new ToolStripMenuItem(_updateCurrentSubmodule.Text);
+                usmi.Tag = currentSubmoduleName;
+                usmi.Click += UpdateSubmoduleToolStripMenuItemClick;
+                toolStripButtonLevelUp.DropDownItems.Add(usmi);
             }
+
+            var mi = new ToolStripMenuItem(updateAllSubmodulesToolStripMenuItem.Text);
+            mi.Click += UpdateAllSubmodulesToolStripMenuItemClick;
+            toolStripButtonLevelUp.DropDownItems.Add(mi);
 
             Cursor.Current = Cursors.Default;
         }
@@ -2746,6 +2801,57 @@ namespace GitUI
         {
             if (Module.SuperprojectModule != null)
                 SetGitModule(Module.SuperprojectModule);
+            else
+                toolStripButtonLevelUp.ShowDropDown();
+        }
+
+        private void openWithDifftoolToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            bool artificialRevSelected = false;
+            bool enableDiffDropDown = true;
+            bool showParentItems = false;
+
+            IList<GitRevision> revisions = RevisionGrid.GetSelectedRevisions();
+
+            if (revisions.Count > 0)
+            {
+                artificialRevSelected = revisions[0].IsArtificial();
+
+                if (revisions.Count == 2)
+                {
+                    artificialRevSelected = artificialRevSelected || revisions[revisions.Count - 1].IsArtificial();
+                    showParentItems = true;
+                }
+                else
+                    enableDiffDropDown = revisions.Count == 1;
+            }
+
+            aBToolStripMenuItem.Enabled = enableDiffDropDown;
+            bLocalToolStripMenuItem.Enabled = enableDiffDropDown;
+            aLocalToolStripMenuItem.Enabled = enableDiffDropDown;
+            parentOfALocalToolStripMenuItem.Enabled = enableDiffDropDown;
+            parentOfBLocalToolStripMenuItem.Enabled = enableDiffDropDown;
+
+            parentOfALocalToolStripMenuItem.Visible = showParentItems;
+            parentOfBLocalToolStripMenuItem.Visible = showParentItems;
+
+            if (!enableDiffDropDown)
+                return;
+            //enable *<->Local items only when local file exists
+            foreach (var item in DiffFiles.SelectedItems)
+            {
+                var fileNames = new StringBuilder();
+                fileNames.Append((Module.WorkingDir + item.Name).Replace(Settings.PathSeparatorWrong, Settings.PathSeparator));
+
+                if (File.Exists(fileNames.ToString()))
+                {
+                    bLocalToolStripMenuItem.Enabled = !artificialRevSelected;
+                    aLocalToolStripMenuItem.Enabled = !artificialRevSelected;
+                    parentOfALocalToolStripMenuItem.Enabled = !artificialRevSelected;
+                    parentOfBLocalToolStripMenuItem.Enabled = !artificialRevSelected;
+                    return;
+                }
+            }
         }
 
     }

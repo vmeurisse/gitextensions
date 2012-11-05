@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using GitCommands.Config;
 using GitCommands.Git;
 using JetBrains.Annotations;
@@ -187,39 +188,13 @@ namespace GitCommands
                     process.StandardInput.Close();
                 }
 
-                stdOutput = ReadByte(process.StandardOutput.BaseStream);
-                stdError = ReadByte(process.StandardError.BaseStream);
+                SynchronizedProcessReader.ReadBytes(process, out stdOutput, out stdError);
+
                 process.WaitForExit();
+
                 startInfo = null;
                 return process.ExitCode;
             }
-        }
-
-        private static byte[] ReadByte(Stream stream)
-        {
-            if (!stream.CanRead)
-            {
-                return null;
-            }
-            int commonLen = 0;
-            List<byte[]> list = new List<byte[]>();
-            byte[] buffer = new byte[4096];
-            int len;
-            while ((len = stream.Read(buffer, 0, buffer.Length)) != 0)
-            {
-                byte[] newbuff = new byte[len];
-                Array.Copy(buffer, newbuff, len);
-                commonLen += len;
-                list.Add(newbuff);
-            }
-            buffer = new byte[commonLen];
-            commonLen = 0;
-            for (int i = 0; i < list.Count; i++)
-            {
-                Array.Copy(list[i], 0, buffer, commonLen, list[i].Length);
-                commonLen += list[i].Length;
-            }
-            return buffer;
         }
 
         internal static int CreateAndStartProcess(string arguments, string cmd, string workDir, out string stdOutput, out string stdError, string stdInput)
@@ -251,8 +226,8 @@ namespace GitCommands
                     process.StandardInput.Close();
                 }
 
-                stdOutput = process.StandardOutput.ReadToEnd();
-                stdError = process.StandardError.ReadToEnd();
+                SynchronizedProcessReader.Read(process, out stdOutput, out stdError);
+
                 process.WaitForExit();
                 return process.ExitCode;
             }
@@ -567,7 +542,7 @@ namespace GitCommands
             if (!string.IsNullOrEmpty(toBranch) && !string.IsNullOrEmpty(fromBranch))
                 return string.Format("push {0}\"{1}\" {2}:{3}", options, path.Trim(), fromBranch, toBranch);
 
-            return string.Format("push {0}\"{1}\" {2}", sforce, options, path.Trim(), fromBranch);
+            return string.Format("push {0}\"{1}\" {2}", options, path.Trim(), fromBranch);
         }
 
         public static string PushMultipleCmd(string path, IEnumerable<GitPushAction> pushActions)
@@ -853,6 +828,55 @@ namespace GitCommands
             return stringBuilder.ToString();
         }
 
+        public static GitSubmoduleStatus GetSubmoduleChanges(GitModule module, string fileName, string oldFileName, bool staged)
+        {
+            string text = module.GetCurrentChanges(fileName, oldFileName, staged, "", module.FilesEncoding);
+            return GetSubmoduleStatus(text);
+        }
+
+        public static GitSubmoduleStatus GetSubmoduleStatus(string text)
+        {
+            var status = new GitSubmoduleStatus();
+            using (StringReader reader = new StringReader(text))
+            {
+                string line = reader.ReadLine();
+                string moduleName = "";
+                if (line != null)
+                {
+                    var match = Regex.Match(line, @"diff --git a/(\S+) b/(\S+)");
+                    if (match != null && match.Groups.Count > 0)
+                    {
+                        status.Name = match.Groups[1].Value;
+                        status.OldName = match.Groups[2].Value;
+                    }
+                }
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (!line.Contains("Subproject"))
+                        continue;
+
+                    char c = line[0];
+                    const string commit = "commit ";
+                    string hash = "";
+                    int pos = line.IndexOf(commit);
+                    if (pos >= 0)
+                        hash = line.Substring(pos + commit.Length);
+                    bool bdirty = hash.EndsWith("-dirty");
+                    hash = hash.Replace("-dirty", "");
+                    if (c == '-')
+                    {
+                        status.OldCommit = hash;
+                    }
+                    else if (c == '+')
+                    {
+                        status.Commit = hash;
+                        status.IsDirty = bdirty;
+                    }
+                }
+            }
+            return status;
+        }
+
         public static List<GitItemStatus> GetAllChangedFilesFromString(GitModule module, string statusString)
         {
             return GetAllChangedFilesFromString(module, statusString, false);
@@ -1025,87 +1049,68 @@ namespace GitCommands
 
         public static string ProcessSubmodulePatch(GitModule module, string text)
         {
+            var status = GetSubmoduleStatus(text);
+            GitModule gitmodule = module.GetSubmodule(status.Name);
             StringBuilder sb = new StringBuilder();
-            using (StringReader reader = new StringReader(text))
+            sb.AppendLine("Submodule " + status.Name + " Change");
+
+            sb.AppendLine();
+            sb.AppendLine("From:\t" + status.OldCommit);
+            if (gitmodule.ValidWorkingDir())
             {
-                string line = reader.ReadLine();
-                string moduleName = "";
-                if (line != null)
+                string error = "";
+                CommitData commitData = CommitData.GetCommitData(gitmodule, status.OldCommit, ref error);
+                if (commitData != null)
                 {
-                    var match = Regex.Match(line, @"diff --git a/(\S+) b/(\S+)");
-                    if (match != null && match.Groups.Count > 0)
-                        moduleName = match.Groups[1].Value;
-                }
-                sb.AppendLine("Submodule " + moduleName + " Change");
-                string fromHash = null;
-                string toHash = null;
-                bool dirtyFlag = false;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (line.Contains("Subproject"))
-                    {
-                        sb.AppendLine();
-                        char c = line[0];
-                        const string commit = "commit ";
-                        string hash = "";
-                        int pos = line.IndexOf(commit);
-                        if (pos >= 0)
-                            hash = line.Substring(pos + commit.Length);
-                        bool bdirty = hash.EndsWith("-dirty");
-                        dirtyFlag |= bdirty;
-                        hash = hash.Replace("-dirty", "");
-                        string dirty = !bdirty ? "" : " (dirty)";
-                        if (c == '-')
-                        {
-                            fromHash = hash;
-                            sb.AppendLine("From:\t" + hash + dirty);
-                        }
-                        else if (c == '+')
-                        {
-                            toHash = hash;
-                            sb.AppendLine("To:\t\t" + hash + dirty);
-                        }
-
-                        GitModule gitmodule = module.GetSubmodule(moduleName);
-
-                        if (gitmodule.ValidWorkingDir())
-                        {
-                            string error = "";
-                            CommitData commitData = CommitData.GetCommitData(gitmodule, hash, ref error);
-                            if (commitData != null)
-                            {
-                                sb.AppendLine("\t\t\t\t\t" + GitCommandHelpers.GetRelativeDateString(DateTime.UtcNow, commitData.CommitDate.UtcDateTime) + commitData.CommitDate.LocalDateTime.ToString(" (ddd MMM dd HH':'mm':'ss yyyy)"));
-                                var delim = new char[] { '\n', '\r' };
-                                var lines = commitData.Body.Trim(delim).Split(new string[] { "\r\n" }, 0);
-                                foreach (var curline in lines)
-                                    sb.AppendLine("\t\t" + curline);
-                            }
-                            if (fromHash != null && toHash != null)
-                            {
-                                if (dirtyFlag)
-                                {
-                                    string status = gitmodule.GetStatusText(false);
-                                    if (!String.IsNullOrEmpty(status))
-                                    {
-                                        sb.AppendLine("\nStatus:");
-                                        sb.Append(status);
-                                    }
-                                }
-
-                                string diffs = gitmodule.GetDiffFilesText(fromHash, toHash);
-                                if (!String.IsNullOrEmpty(diffs))
-                                {
-                                    sb.AppendLine("\nDifferences:");
-                                    sb.Append(diffs);
-                                }
-                            }
-                        }
-                        else
-                            sb.AppendLine();
-
-                    }
+                    sb.AppendLine("\t\t\t\t\t" + GitCommandHelpers.GetRelativeDateString(DateTime.UtcNow, commitData.CommitDate.UtcDateTime) + commitData.CommitDate.LocalDateTime.ToString(" (ddd MMM dd HH':'mm':'ss yyyy)"));
+                    var delim = new char[] { '\n', '\r' };
+                    var lines = commitData.Body.Trim(delim).Split(new string[] { "\r\n" }, 0);
+                    foreach (var curline in lines)
+                        sb.AppendLine("\t\t" + curline);
                 }
             }
+            else
+                sb.AppendLine();
+
+            sb.AppendLine();
+            string dirty = !status.IsDirty ? "" : " (dirty)";
+            sb.AppendLine("To:\t\t" + status.Commit + dirty);
+            if (gitmodule.ValidWorkingDir())
+            {
+                string error = "";
+                CommitData commitData = CommitData.GetCommitData(gitmodule, status.Commit, ref error);
+                if (commitData != null)
+                {
+                    sb.AppendLine("\t\t\t\t\t" + GitCommandHelpers.GetRelativeDateString(DateTime.UtcNow, commitData.CommitDate.UtcDateTime) + commitData.CommitDate.LocalDateTime.ToString(" (ddd MMM dd HH':'mm':'ss yyyy)"));
+                    var delim = new char[] { '\n', '\r' };
+                    var lines = commitData.Body.Trim(delim).Split(new string[] { "\r\n" }, 0);
+                    foreach (var curline in lines)
+                        sb.AppendLine("\t\t" + curline);
+                }
+            }
+            else
+                sb.AppendLine();
+
+            if (status.Commit != null && status.OldCommit != null)
+            {
+                if (status.IsDirty)
+                {
+                    string statusText = gitmodule.GetStatusText(false);
+                    if (!String.IsNullOrEmpty(statusText))
+                    {
+                        sb.AppendLine("\nStatus:");
+                        sb.Append(statusText);
+                    }
+                }
+
+                string diffs = gitmodule.GetDiffFilesText(status.OldCommit, status.Commit);
+                if (!String.IsNullOrEmpty(diffs))
+                {
+                    sb.AppendLine("\nDifferences:");
+                    sb.Append(diffs);
+                }
+            }
+
             return sb.ToString();
         }
 

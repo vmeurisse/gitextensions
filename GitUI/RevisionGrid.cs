@@ -34,8 +34,6 @@ namespace GitUI
     [DefaultEvent("DoubleClick")]
     public sealed partial class RevisionGrid : GitModuleControl
     {
-        private readonly TranslationString _currentWorkingDirChanges = new TranslationString("Current uncommitted changes");
-        private readonly TranslationString _currentIndex = new TranslationString("Commit index");
         private readonly TranslationString _areYouSureYouWantCheckout = new TranslationString("Are you sure to checkout the selected revision?");
         private readonly TranslationString _areYouSureYouWantCheckoutCaption = new TranslationString("Checkout revision");
         private readonly TranslationString _droppingFilesBlocked = new TranslationString("For you own protection dropping more than 10 patch files at once is blocked!");
@@ -579,6 +577,20 @@ namespace GitUI
 
             return rows
                 .Select(row => GetRevision(row.Index))
+                .ToList();
+        }
+
+        public List<string> GetRevisionChildren(string revision)
+        {
+            var rows = Revisions
+                .Rows
+                .Cast<DataGridViewRow>()
+                .Where(row => Revisions.RowCount > row.Index);
+
+            return rows
+                .Select(row => GetRevision(row.Index))
+                .Where(row => row.ParentGuids.Contains(revision))
+                .Select(row => row.Guid)
                 .ToList();
         }
 
@@ -1874,13 +1886,17 @@ namespace GitUI
                     }
                     prevForm = frm;
                     if (frm.ShowDialog(this) != DialogResult.OK)
-                        break;
+                    {
+                        return;
+                    }
                 }
             }
             finally
             {
                 if (prevForm != null)
+                {
                     prevForm.Dispose();
+                }
             }
 
             ForceRefreshRevisions();
@@ -1949,7 +1965,7 @@ namespace GitUI
                         //Add working dir as virtual commit
                         var workingDir = new GitRevision(Module, GitRevision.UncommittedWorkingDirGuid)
                                              {
-                                                 Message = _currentWorkingDirChanges.Text,
+                                                 Message = Strings.GetCurrentWorkingDirChanges(),
                                                  ParentGuids =
                                                      stagedChanges
                                                          ? new[] { GitRevision.IndexGuid }
@@ -1963,7 +1979,7 @@ namespace GitUI
                         //Add index as virtual commit
                         var index = new GitRevision(Module, GitRevision.IndexGuid)
                                         {
-                                            Message = _currentIndex.Text,
+                                            Message = Strings.GetCurrentIndex(),
                                             ParentGuids = new string[] { CurrentCheckout }
                                         };
                         Revisions.Add(index.Guid, index.ParentGuids, DvcsGraph.DataType.Normal, index);
@@ -2313,6 +2329,7 @@ namespace GitUI
             ShowAllBranches,
             ShowCurrentBranchOnly,
             GoToParent,
+            GoToChild,
             ToggleHighlightSelectedBranch,
             NextQuickSearch,
             PrevQuickSearch
@@ -2335,6 +2352,7 @@ namespace GitUI
                 case Commands.ShowAllBranches: ShowAllBranchesToolStripMenuItemClick(null, null); break;
                 case Commands.ShowCurrentBranchOnly: ShowCurrentBranchOnlyToolStripMenuItemClick(null, null); break;
                 case Commands.GoToParent: goToParentToolStripMenuItem_Click(null, null); break;
+                case Commands.GoToChild: goToChildToolStripMenuItem_Click(null, null); break;
                 case Commands.ToggleHighlightSelectedBranch: ToggleHighlightSelectedBranch(); break;
                 case Commands.NextQuickSearch: NextQuickSearch(true); break;
                 case Commands.PrevQuickSearch: NextQuickSearch(false); break;
@@ -2387,9 +2405,9 @@ namespace GitUI
 
         private void deleteBranchTagToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (sender is ToolStripMenuItem)
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item != null)
             {
-                ToolStripMenuItem item = sender as ToolStripMenuItem;
                 if (item.DropDown != null && item.DropDown.Items.Count == 1)
                     item.DropDown.Items[0].PerformClick();
             }
@@ -2400,6 +2418,14 @@ namespace GitUI
             var r = GetRevision(LastRow);
             if (r.HasParent())
                 SetSelectedRevision(new GitRevision(Module, r.ParentGuids[0]));
+        }
+
+        private void goToChildToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var r = GetRevision(LastRow);
+            var children = GetRevisionChildren(r.Guid);
+            if (children.Count > 0)
+                SetSelectedRevision(new GitRevision(Module, children[0]));
         }
     }
 }

@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using GitCommands.Config;
 using GitUIPluginInterfaces;
 using JetBrains.Annotations;
+using LibGit2Sharp;
 using PatchApply;
 
 namespace GitCommands
@@ -21,6 +22,7 @@ namespace GitCommands
     /// Class provide non-static methods for manipulation with git module.
     /// You can create several instances for submodules.
     /// </summary>
+    [DebuggerDisplay("GitModule ( {_workingdir} )")]
     public sealed class GitModule : IGitModule
     {
         private static readonly Regex DefaultHeadPattern = new Regex("refs/remotes/[^/]+/HEAD", RegexOptions.Compiled);
@@ -31,8 +33,19 @@ namespace GitCommands
         }
 
         private string _workingdir;
+        private LibGit2Sharp.Repository _repository;
         private GitModule _superprojectModule;
         private string _submoduleName;
+
+        public LibGit2Sharp.Repository Repository
+        {
+            get
+            {
+                if (_repository == null)
+                    _repository = new LibGit2Sharp.Repository(WorkingDir);
+                return _repository;
+            }
+        }
 
         public string WorkingDir
         {
@@ -1855,10 +1868,7 @@ namespace GitCommands
 
         public string[] GetRemotes(bool allowEmpty)
         {
-            using(var repo = new LibGit2Sharp.Repository(WorkingDir))
-            {
-                return repo.Remotes.Select(r => r.Name).ToArray();
-            }
+            return Repository.Remotes.Select(r => r.Name).ToArray();
         }
 
         public ConfigFile GetLocalConfig()
@@ -2109,6 +2119,29 @@ namespace GitCommands
             return GitCommandHelpers.GetAllChangedFilesFromString(this, status);
         }
 
+        public List<GitItemStatus> GetAllChangedFilesWithSubmodulesStatus(bool excludeIgnoredFiles, bool untrackedFiles)
+        {
+            var status = GetAllChangedFiles(excludeIgnoredFiles, untrackedFiles);
+
+            foreach(var item in status)
+                if (item.IsSubmodule)
+                {
+                    item.SubmoduleStatus = GitCommandHelpers.GetSubmoduleChanges(this, item.Name, item.OldName, item.IsStaged);
+                    if (item.SubmoduleStatus.Commit != item.SubmoduleStatus.OldCommit)
+                    {
+                        var submodule = item.SubmoduleStatus.GetSubmodule(this);
+                        if (submodule != null)
+                        {
+                            var commitData = item.SubmoduleStatus.GetCommitData(submodule);
+                            var oldCommitData = item.SubmoduleStatus.GetOldCommitData(submodule);
+                            if (commitData != null && oldCommitData != null)
+                                item.SubmoduleStatus.IsCommitNewer = commitData.CommitDate >= oldCommitData.CommitDate;
+                        }
+                    }
+                }
+            return status;
+        }
+
         public List<GitItemStatus> GetTrackedChangedFiles()
         {
             var status = RunGitCmd(GitCommandHelpers.GetAllChangedFilesCmd(true, false));
@@ -2345,30 +2378,27 @@ namespace GitCommands
 
         private string GetTree(bool tags, bool branches)
         {
-            using (var repo = new LibGit2Sharp.Repository(WorkingDir))
+            if (tags && branches)
             {
-                if (tags && branches)
-                {
-                    return repo.Refs
-                        .Select( r => string.Format("{0} {1}", r.ResolveToDirectReference().TargetIdentifier, r.CanonicalName))
-                        .Aggregate(new StringBuilder(), (sb, s) => sb.AppendLine(s))
-                        .ToString();
-                }
-
-                if (tags)
-                    return repo.Tags
-                        .Select(r => string.Format("{0} {1}", r.Target.Sha, r.CanonicalName))
-                        .Aggregate(new StringBuilder(), (sb, s) => sb.AppendLine(s))
-                        .ToString();
-
-                if (branches)
-                    return repo.Branches
-                        .Where(r => !r.IsRemote)
-                        .Select(r => string.Format("{0} {1}", r.Tip.Sha, r.CanonicalName))
-                        .Aggregate(new StringBuilder(), (sb, s) => sb.AppendLine(s))
-                        .ToString();
-                return "";
+                return Repository.Refs
+                    .Select(r => string.Format("{0} {1}", r.ResolveToDirectReference().TargetIdentifier, r.CanonicalName))
+                    .Aggregate(new StringBuilder(), (sb, s) => sb.AppendLine(s))
+                    .ToString();
             }
+
+            if (tags)
+                return Repository.Tags
+                    .Select(r => string.Format("{0} {1}", r.Target.Sha, r.CanonicalName))
+                    .Aggregate(new StringBuilder(), (sb, s) => sb.AppendLine(s))
+                    .ToString();
+
+            if (branches)
+                return Repository.Branches
+                    .Where(r => !r.IsRemote)
+                    .Select(r => string.Format("{0} {1}", r.Tip.Sha, r.CanonicalName))
+                    .Aggregate(new StringBuilder(), (sb, s) => sb.AppendLine(s))
+                    .ToString();
+            return "";
         }
 
         private List<GitHead> GetHeads(string tree)
@@ -2582,7 +2612,8 @@ namespace GitCommands
 
         public string GetFileText(string id, Encoding encoding)
         {
-            return RunCachableCmd(Settings.GitCommand, "cat-file blob \"" + id + "\"", encoding);
+            var blob = Repository.Lookup<LibGit2Sharp.Blob>(new ObjectId(id));
+            return encoding.GetString(blob.Content);
         }
 
         public string GetFileBlobHash(string fileName, string revision)
@@ -3029,5 +3060,30 @@ namespace GitCommands
         }
 
         #endregion
+
+        private bool disposed = false;
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (this.disposed)
+                return;
+
+            if (disposing && _repository != null)
+                _repository.Dispose();
+
+            _repository = null;
+
+            disposed = true;
+        }
+
+        ~GitModule()
+        {
+            Dispose(false);
+        }
     }
 }

@@ -39,7 +39,6 @@
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.btnChooseRevision = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
-            this.revisionGrid1 = new GitUI.RevisionGrid();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -56,13 +55,13 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Selected revision to archive:";
             // 
-            // Save
+            // buttonArchiveRevision
             // 
             this.buttonArchiveRevision.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonArchiveRevision.Image = global::GitUI.Properties.Resources.IconSaveAs;
             this.buttonArchiveRevision.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.buttonArchiveRevision.Location = new System.Drawing.Point(480, 274);
-            this.buttonArchiveRevision.Name = "Save";
+            this.buttonArchiveRevision.Location = new System.Drawing.Point(480, 224);
+            this.buttonArchiveRevision.Name = "buttonArchiveRevision";
             this.buttonArchiveRevision.Size = new System.Drawing.Size(111, 25);
             this.buttonArchiveRevision.TabIndex = 3;
             this.buttonArchiveRevision.Text = "Save as...";
@@ -76,27 +75,26 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel1.Controls.Add(this.label1, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.buttonArchiveRevision, 2, 3);
-            this.tableLayoutPanel1.Controls.Add(this.groupBox1, 1, 3);
+            this.tableLayoutPanel1.Controls.Add(this.buttonArchiveRevision, 2, 2);
+            this.tableLayoutPanel1.Controls.Add(this.groupBox1, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.commitSummaryUserControl1, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel3, 2, 1);
-            this.tableLayoutPanel1.Controls.Add(this.revisionGrid1, 0, 2);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 4;
+            this.tableLayoutPanel1.RowCount = 3;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 75F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(594, 302);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(594, 252);
             this.tableLayoutPanel1.TabIndex = 5;
             // 
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.tableLayoutPanel2);
-            this.groupBox1.Location = new System.Drawing.Point(365, 244);
+            this.groupBox1.Location = new System.Drawing.Point(365, 194);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(109, 55);
             this.groupBox1.TabIndex = 4;
@@ -144,10 +142,11 @@
             // 
             this.commitSummaryUserControl1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.commitSummaryUserControl1.AutoSize = true;
             this.commitSummaryUserControl1.Location = new System.Drawing.Point(23, 43);
             this.commitSummaryUserControl1.Name = "commitSummaryUserControl1";
             this.commitSummaryUserControl1.Revision = null;
-            this.commitSummaryUserControl1.Size = new System.Drawing.Size(451, 96);
+            this.commitSummaryUserControl1.Size = new System.Drawing.Size(451, 90);
             this.commitSummaryUserControl1.TabIndex = 5;
             // 
             // tableLayoutPanel3
@@ -182,30 +181,17 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(3, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(76, 30);
+            this.label2.Size = new System.Drawing.Size(94, 30);
             this.label2.TabIndex = 32;
-            this.label2.Text = "Pick another revision:";
-            // 
-            // revisionGrid1
-            // 
-            this.revisionGrid1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.revisionGrid1, 3);
-            this.revisionGrid1.Location = new System.Drawing.Point(3, 149);
-            this.revisionGrid1.Name = "revisionGrid1";
-            this.revisionGrid1.RevisionGraphDrawStyle = GitUI.DvcsGraph.RevisionGraphDrawStyleEnum.DrawNonRelativesGray;
-            this.revisionGrid1.Size = new System.Drawing.Size(588, 75);
-            this.revisionGrid1.TabIndex = 33;
-            this.revisionGrid1.SelectionChanged += new System.EventHandler(this.revisionGrid1_SelectionChanged);
+            this.label2.Text = "Choose another revision:";
             // 
             // FormArchive
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(594, 302);
+            this.ClientSize = new System.Drawing.Size(594, 252);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.MinimumSize = new System.Drawing.Size(610, 340);
+            this.MinimumSize = new System.Drawing.Size(610, 290);
             this.Name = "FormArchive";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Archive";
@@ -234,6 +220,5 @@
         private System.Windows.Forms.Button btnChooseRevision;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.Label label2;
-        private RevisionGrid revisionGrid1;
     }
 }

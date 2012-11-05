@@ -138,6 +138,7 @@ namespace GitUI
             this.commitCursorLine = new System.Windows.Forms.ToolStripStatusLabel();
             this.commitCursorColumnLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.commitCursorColumn = new System.Windows.Forms.ToolStripStatusLabel();
+            this.commitEndPadding = new System.Windows.Forms.ToolStripStatusLabel();
             this.flowCommitButtons = new System.Windows.Forms.FlowLayoutPanel();
             this.Commit = new System.Windows.Forms.Button();
             this.CommitAndPush = new System.Windows.Forms.Button();
@@ -862,7 +863,7 @@ namespace GitUI
             // 
             this.toolStageAllItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStageAllItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStageAllItem.Image = global::GitUI.Properties.Resources.double_arrow_down;
+            this.toolStageAllItem.Image = global::GitUI.Properties.Resources.IconStageAll;
             this.toolStageAllItem.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStageAllItem.Name = "toolStageAllItem";
             this.toolStageAllItem.Size = new System.Drawing.Size(23, 30);
@@ -879,7 +880,7 @@ namespace GitUI
             // 
             this.toolStageItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStageItem.AutoToolTip = false;
-            this.toolStageItem.Image = global::GitUI.Properties.Resources.ArrowDown;
+            this.toolStageItem.Image = global::GitUI.Properties.Resources.IconStage;
             this.toolStageItem.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStageItem.Name = "toolStageItem";
             this.toolStageItem.Size = new System.Drawing.Size(67, 30);
@@ -890,7 +891,7 @@ namespace GitUI
             // toolUnstageAllItem
             // 
             this.toolUnstageAllItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolUnstageAllItem.Image = global::GitUI.Properties.Resources.double_arrow_up;
+            this.toolUnstageAllItem.Image = global::GitUI.Properties.Resources.IconUnstageAll;
             this.toolUnstageAllItem.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolUnstageAllItem.Name = "toolUnstageAllItem";
             this.toolUnstageAllItem.Size = new System.Drawing.Size(23, 30);
@@ -905,7 +906,7 @@ namespace GitUI
             // toolUnstageItem
             // 
             this.toolUnstageItem.AutoToolTip = false;
-            this.toolUnstageItem.Image = global::GitUI.Properties.Resources.ArrowUp;
+            this.toolUnstageItem.Image = global::GitUI.Properties.Resources.IconUnstage;
             this.toolUnstageItem.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolUnstageItem.Name = "toolUnstageItem";
             this.toolUnstageItem.Size = new System.Drawing.Size(83, 30);
@@ -1037,7 +1038,8 @@ namespace GitUI
             this.commitCursorLineLabel,
             this.commitCursorLine,
             this.commitCursorColumnLabel,
-            this.commitCursorColumn});
+            this.commitCursorColumn,
+            this.commitEndPadding});
             this.commitStatusStrip.Location = new System.Drawing.Point(0, 87);
             this.commitStatusStrip.Name = "commitStatusStrip";
             this.commitStatusStrip.Size = new System.Drawing.Size(511, 25);
@@ -1077,6 +1079,12 @@ namespace GitUI
             this.commitCursorColumn.Size = new System.Drawing.Size(40, 20);
             this.commitCursorColumn.Text = "0";
             this.commitCursorColumn.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // commitEndPadding
+            // 
+            this.commitEndPadding.AutoSize = false;
+            this.commitSpacer.Name = "commitEndPadding";
+            this.commitEndPadding.Size = new System.Drawing.Size(1, 20);
             // 
             // flowCommitButtons
             // 
@@ -1127,6 +1135,8 @@ namespace GitUI
             // 
             this.Reset.Location = new System.Drawing.Point(1, 84);
             this.Reset.Margin = new System.Windows.Forms.Padding(1, 4, 4, 4);
+            this.Reset.Image = global::GitUI.Properties.Resources.IconResetWorkingDirChanges;
+            this.Reset.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Reset.Name = "Reset";
             this.Reset.Size = new System.Drawing.Size(214, 32);
             this.Reset.TabIndex = 11;
@@ -1440,6 +1450,7 @@ namespace GitUI
         private ToolStripStatusLabel commitCursorLine;
         private ToolStripStatusLabel commitCursorColumnLabel;
         private ToolStripStatusLabel commitCursorColumn;
+        private ToolStripStatusLabel commitEndPadding;
         private ToolStripSeparator toolStripSeparator12;
         private ToolStripMenuItem toolStripMenuItem4;
         private TableLayoutPanel tableLayoutPanel1;

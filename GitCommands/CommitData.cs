@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Web;
+using System.Net;
 using LibGit2Sharp;
 
 namespace GitCommands
@@ -35,6 +36,7 @@ namespace GitCommands
         public string Guid { get; private set; }
         public string TreeGuid { get; private set; }
         public ReadOnlyCollection<string> ParentGuids { get; private set; }
+        public List<string> ChildrenGuids { get; set; }
         public string Author { get; private set; }
         public DateTimeOffset AuthorDate { get; private set; }
         public string Committer { get; private set; }
@@ -50,24 +52,32 @@ namespace GitCommands
         {
             StringBuilder header = new StringBuilder();
             string authorEmail = GetEmail(Author);
-            header.AppendLine(FillToLength(HttpUtility.HtmlEncode(Strings.GetAuthorText()) + ":", COMMITHEADER_STRING_LENGTH) +
-                "<a href='mailto:" + HttpUtility.HtmlEncode(authorEmail) + "'>" + HttpUtility.HtmlEncode(Author) + "</a>");
-            header.AppendLine(FillToLength(HttpUtility.HtmlEncode(Strings.GetAuthorDateText()) + ":", COMMITHEADER_STRING_LENGTH) +
-                HttpUtility.HtmlEncode(GitCommandHelpers.GetRelativeDateString(DateTime.UtcNow, AuthorDate.UtcDateTime) + " (" + AuthorDate.LocalDateTime.ToString("ddd MMM dd HH':'mm':'ss yyyy")) + ")");
+            header.AppendLine(FillToLength(WebUtility.HtmlEncode(Strings.GetAuthorText()) + ":", COMMITHEADER_STRING_LENGTH) +
+                "<a href='mailto:" + WebUtility.HtmlEncode(authorEmail) + "'>" + WebUtility.HtmlEncode(Author) + "</a>");
+            header.AppendLine(FillToLength(WebUtility.HtmlEncode(Strings.GetAuthorDateText()) + ":", COMMITHEADER_STRING_LENGTH) +
+                WebUtility.HtmlEncode(GitCommandHelpers.GetRelativeDateString(DateTime.UtcNow, AuthorDate.UtcDateTime) + " (" + AuthorDate.LocalDateTime.ToString("ddd MMM dd HH':'mm':'ss yyyy")) + ")");
             string committerEmail = GetEmail(Committer);
-            header.AppendLine(FillToLength(HttpUtility.HtmlEncode(Strings.GetCommitterText()) + ":", COMMITHEADER_STRING_LENGTH) +
-                "<a href='mailto:" + HttpUtility.HtmlEncode(committerEmail) + "'>" + HttpUtility.HtmlEncode(Committer) + "</a>");
-            header.AppendLine(FillToLength(HttpUtility.HtmlEncode(Strings.GetCommitDateText()) + ":", COMMITHEADER_STRING_LENGTH) +
-                HttpUtility.HtmlEncode(GitCommandHelpers.GetRelativeDateString(DateTime.UtcNow, CommitDate.UtcDateTime) + " (" + CommitDate.LocalDateTime.ToString("ddd MMM dd HH':'mm':'ss yyyy")) + ")");
-            header.Append(FillToLength(HttpUtility.HtmlEncode(Strings.GetCommitHashText()) + ":", COMMITHEADER_STRING_LENGTH) +
-                HttpUtility.HtmlEncode(Guid));
+            header.AppendLine(FillToLength(WebUtility.HtmlEncode(Strings.GetCommitterText()) + ":", COMMITHEADER_STRING_LENGTH) +
+                "<a href='mailto:" + WebUtility.HtmlEncode(committerEmail) + "'>" + WebUtility.HtmlEncode(Committer) + "</a>");
+            header.AppendLine(FillToLength(WebUtility.HtmlEncode(Strings.GetCommitDateText()) + ":", COMMITHEADER_STRING_LENGTH) +
+                WebUtility.HtmlEncode(GitCommandHelpers.GetRelativeDateString(DateTime.UtcNow, CommitDate.UtcDateTime) + " (" + CommitDate.LocalDateTime.ToString("ddd MMM dd HH':'mm':'ss yyyy")) + ")");
+            header.Append(FillToLength(WebUtility.HtmlEncode(Strings.GetCommitHashText()) + ":", COMMITHEADER_STRING_LENGTH) +
+                WebUtility.HtmlEncode(Guid));
+
+            if (ChildrenGuids != null && ChildrenGuids.Count != 0)
+            {
+                header.AppendLine();
+                var commitsString = ChildrenGuids.Select(LinkFactory.CreateCommitLink).Join(" ");
+                header.Append(FillToLength(WebUtility.HtmlEncode(Strings.GetChildrenText()) + ":",
+                                           COMMITHEADER_STRING_LENGTH) + commitsString);
+            }
 
             var parentGuids = ParentGuids.Where(s => !string.IsNullOrEmpty(s));
             if (parentGuids.Any())
             {
                 header.AppendLine();
                 var commitsString = parentGuids.Select(LinkFactory.CreateCommitLink).Join(" ");
-                header.Append(FillToLength(HttpUtility.HtmlEncode(Strings.GetParentsText()) + ":",
+                header.Append(FillToLength(WebUtility.HtmlEncode(Strings.GetParentsText()) + ":",
                                            COMMITHEADER_STRING_LENGTH) + commitsString);
             }
 
@@ -109,27 +119,27 @@ namespace GitCommands
         /// </summary>
         public static CommitData GetCommitData(GitModule module, string sha1, ref string error)
         {
+            error = "";
             if (module == null)
                 throw new ArgumentNullException("module");
             if (sha1 == null)
                 throw new ArgumentNullException("sha1");
 
-            using (var repo = new LibGit2Sharp.Repository(module.WorkingDir))
+            var commit = module.Repository.Lookup<LibGit2Sharp.Commit>(sha1);
+            if (commit == null)
             {
-                //TODO: add error handling
-                return CreateFromFormatedData(repo.Lookup<LibGit2Sharp.Commit>(sha1));
+                error = "Cannot find commit " + sha1;
+                return null;
             }
+            return CreateFromCommit(commit);
         }
 
-        public const string LogFormat = "%H%n%T%n%P%n%aN <%aE>%n%at%n%cN <%cE>%n%ct%n%e%n%B%nNotes:%n%-N"; 
-
         /// <summary>
-        /// Creates a CommitData object from formated commit info data from git.  The string passed in should be
-        /// exact output of a log or show command using --format=LogFormat.
+        /// Creates a CommitData object from formated commit info data from git.
         /// </summary>
         /// <param name="commit">Commit object from libgit2sharp.</param>
         /// <returns>CommitData object populated with parsed info from commit object.</returns>
-        public static CommitData CreateFromFormatedData(LibGit2Sharp.Commit commit)
+        public static CommitData CreateFromCommit(LibGit2Sharp.Commit commit)
         {
             if (commit == null)
                 throw new ArgumentNullException("commit");
