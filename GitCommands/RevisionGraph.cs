@@ -5,9 +5,18 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using GitCommands.Config;
+using LibGit2Sharp;
 
 namespace GitCommands
 {
+    [Flags]
+    public enum LogOptions
+    {
+        All = 1,            // --all
+        Boundary = 2,       // --boundary
+        ShowGitNotes = 4    // --not --glob=notes --not
+    }
+
     public abstract class RevisionGraphInMemFilter
     {
         public abstract bool PassThru(GitRevision rev);
@@ -95,7 +104,8 @@ namespace GitCommands
             backgroundLoader.Cancel();
         }
 
-        public string LogParam = "HEAD --all";//--branches --remotes --tags";
+        public LogOptions LogParam = LogOptions.All;
+        public string Filter = String.Empty;
         public string BranchFilter = String.Empty;
         public RevisionGraphInMemFilter InMemFilter;
         private string selectedBranchName;
@@ -117,9 +127,20 @@ namespace GitCommands
             RevisionCount = 0;
             heads = GetHeads().ToDictionaryOfList(head => head.Guid);
 
-            // TODO: Support Settings.OrderRevisionByDate
+            Filter filter;
+            if (Settings.OrderRevisionByDate)
+            {
+                filter = new Filter { SortBy = GitSortOptions.Time };
+            }
+            else
+            {
+                filter = new Filter { SortBy = GitSortOptions.Topological };
+            }
+
             // TODO: Support BranchFilter
-            foreach (var commit in Module.Repository.Commits.Where(p => true))
+            // TODO: Support LogParam
+            // TODO: Support Filter
+            foreach (var commit in Module.Repository.Commits.QueryBy(filter))
             {
                 GitRevision revision = new GitRevision(Module, null);
                 revision.Author = commit.Author.Name;
