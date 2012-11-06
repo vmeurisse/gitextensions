@@ -117,31 +117,31 @@ namespace GitCommands
             RevisionCount = 0;
             heads = GetHeads().ToDictionaryOfList(head => head.Guid);
 
-            using (var repo = new LibGit2Sharp.Repository(Module.WorkingDir))
+            // TODO: Support Settings.OrderRevisionByDate
+            // TODO: Support BranchFilter
+            foreach (var commit in Module.Repository.Commits.Where(p => true))
             {
-                foreach (var commit in repo.Commits.Where(p => true))
-                {
-                    GitRevision revision = new GitRevision(Module, null);
-                    revision.Author = commit.Author.Name;
-                    revision.AuthorDate = commit.Author.When.UtcDateTime;
-                    revision.AuthorEmail = commit.Author.Email;
-                    revision.CommitDate = commit.Committer.When.UtcDateTime;
-                    revision.Committer = commit.Committer.Name;
-                    revision.Guid = commit.Id.Sha;
-                    
-                    List<GitHead> headList;
-                    if (heads.TryGetValue(revision.Guid, out headList))
-                        revision.Heads.AddRange(headList);
-                    revision.Message = commit.MessageShort;
-                    //revision.MessageEncoding = ??
-                    revision.TreeGuid = commit.Tree.Sha;
-                    revision.ParentGuids = commit.Parents.Select(p => p.Sha).ToArray();
+                GitRevision revision = new GitRevision(Module, null);
+                revision.Author = commit.Author.Name;
+                revision.AuthorDate = commit.Author.When.UtcDateTime;
+                revision.AuthorEmail = commit.Author.Email;
+                revision.CommitDate = commit.Committer.When.UtcDateTime;
+                revision.Committer = commit.Committer.Name;
+                revision.Guid = commit.Id.Sha;
 
-                    RevisionCount++;
+                List<GitHead> headList;
+                if (heads.TryGetValue(revision.Guid, out headList))
+                    revision.Heads.AddRange(headList);
+                revision.Message = commit.MessageShort;
+                // TODO: Support notes
+                //revision.MessageEncoding = ??
+                revision.TreeGuid = commit.Tree.Sha;
+                revision.ParentGuids = commit.Parents.Select(p => p.Sha).ToArray();
 
-                    if (Updated != null)
-                        Updated(this, new RevisionGraphUpdatedEventArgs(revision));
-                }
+                RevisionCount++;
+
+                if (Updated != null)
+                    Updated(this, new RevisionGraphUpdatedEventArgs(revision));
             }
 
             if (Exited != null)
