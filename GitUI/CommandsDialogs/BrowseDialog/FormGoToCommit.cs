@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using GitCommands;
 using System.Diagnostics;
 using System.Linq;
@@ -8,16 +11,16 @@ namespace GitUI.CommandsDialogs.BrowseDialog
     public sealed partial class FormGoToCommit : GitModuleForm
     {
         string _selectedRevision;
-        private readonly AsyncLoader _tagsLoader;
-        private readonly AsyncLoader _branchesLoader;
+        private CancellationTokenSource _tagsTokenSource;
+        private Task<List<GitHead>> _tagsLoader;
+        private CancellationTokenSource _branchesTokenSource;
+        private Task<List<GitHead>> _branchesLoader;
 
         public FormGoToCommit(GitUICommands aCommands)
             : base(aCommands)
         {
             InitializeComponent();
             Translate();
-            _tagsLoader = new AsyncLoader();
-            _branchesLoader = new AsyncLoader();
         }
 
         public string GetRevision()
@@ -49,18 +52,24 @@ namespace GitUI.CommandsDialogs.BrowseDialog
         private void comboBoxTags_Enter(object sender, EventArgs e)
         {
             comboBoxTags.Text = Strings.GetLoadingData();
-            _tagsLoader.Load(
-                () => Module.GetTagHeads(GitModule.GetTagHeadsSortOrder.ByCommitDateDescending).Select(g => new GitHeaderGuiWrapper(g)).ToList(),
-                list =>
+
+            if (_tagsTokenSource != null)
+                _tagsTokenSource.Cancel();
+            _tagsTokenSource = new CancellationTokenSource();
+            _tagsLoader = Task.Factory.StartNew(() => Module.GetTagHeads(GitModule.GetTagHeadsSortOrder.ByCommitDateDescending).ToList(), _tagsTokenSource.Token);
+            _tagsLoader.ContinueWith((task) => 
                 {
                     comboBoxTags.Text = string.Empty;
-                    comboBoxTags.DataSource = list;
+                    comboBoxTags.DataSource = task.Result;
+                    comboBoxBranches.DisplayMember = "LocalName";
                     if (!comboBoxTags.Text.IsNullOrEmpty())
                     {
                         comboBoxTags.Select(0, comboBoxTags.Text.Length);
                     }
-                }
-            );
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void comboBoxTags_TextChanged(object sender, EventArgs e)
@@ -77,25 +86,30 @@ namespace GitUI.CommandsDialogs.BrowseDialog
             }
 
             // does not work when using autocomplete, for that we have the _TextChanged method
-            _selectedRevision = Module.RevParse(((GitHeaderGuiWrapper)comboBoxTags.SelectedValue).GitHead.CompleteName);
+            _selectedRevision = Module.RevParse(((GitHead)comboBoxTags.SelectedValue).CompleteName);
             Go();
         }
 
         private void comboBoxBranches_Enter(object sender, EventArgs e)
         {
             comboBoxBranches.Text = Strings.GetLoadingData();
-            _branchesLoader.Load(
-                () => Module.GetHeads(false).Select(g => new GitHeaderGuiWrapper(g)).ToList(),
-                list =>
+            if (_branchesTokenSource != null)
+                _branchesTokenSource.Cancel();
+            _branchesTokenSource = new CancellationTokenSource();
+            _branchesLoader = Task.Factory.StartNew(() => Module.GetHeads(false).ToList(), _branchesTokenSource.Token);
+            _branchesLoader.ContinueWith((task) =>
                 {
                     comboBoxBranches.Text = string.Empty;
-                    comboBoxBranches.DataSource = list;
+                    comboBoxBranches.DataSource = task.Result;
+                    comboBoxBranches.DisplayMember = "LocalName";
                     if (!comboBoxBranches.Text.IsNullOrEmpty())
                     {
                         comboBoxBranches.Select(0, comboBoxBranches.Text.Length);
                     }
-                }
-            );
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void comboBoxBranches_TextChanged(object sender, EventArgs e)
@@ -111,27 +125,8 @@ namespace GitUI.CommandsDialogs.BrowseDialog
                 return;
             }
 
-            _selectedRevision = Module.RevParse(((GitHeaderGuiWrapper)comboBoxBranches.SelectedValue).GitHead.CompleteName);
+            _selectedRevision = Module.RevParse(((GitHead)comboBoxBranches.SelectedValue).CompleteName);
             Go();
         }
-    }
-
-    /// <summary>
-    /// to override ToString() for display in combobox
-    /// </summary>
-    class GitHeaderGuiWrapper
-    {
-        readonly GitHead _gitHead;
-        public GitHeaderGuiWrapper(GitHead gitHead)
-        {
-            _gitHead = gitHead;
-        }
-
-        public override string ToString()
-        {
-            return _gitHead.LocalName;
-        }
-
-        public GitHead GitHead { get { return _gitHead; } }
     }
 }

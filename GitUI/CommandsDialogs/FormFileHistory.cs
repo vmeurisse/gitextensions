@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using GitCommands;
 using ResourceManager.Translation;
@@ -11,9 +13,10 @@ namespace GitUI.CommandsDialogs
 {
     public sealed partial class FormFileHistory : GitModuleForm
     {
-        private readonly FilterRevisionsHelper filterRevisionsHelper;
-        private readonly FilterBranchHelper filterBranchHelper;
-        private AsyncLoader asyncLoader;
+        private readonly FilterRevisionsHelper _filterRevisionsHelper;
+        private readonly FilterBranchHelper _filterBranchHelper;
+        private CancellationTokenSource _buildFilterTokenSource = new CancellationTokenSource();
+        private Task<string> _buildFilter;
 
         private FormFileHistory()
             : this(null)
@@ -23,7 +26,6 @@ namespace GitUI.CommandsDialogs
             : base(aCommands)
         {
             InitializeComponent();
-            asyncLoader = new AsyncLoader();
             // set tab page images
             {
                 var imageList = new ImageList();
@@ -37,8 +39,8 @@ namespace GitUI.CommandsDialogs
                 tabControl1.TabPages[2].ImageIndex = 2;
             }
 
-            filterBranchHelper = new FilterBranchHelper(toolStripBranches, toolStripDropDownButton2, FileChanges);
-            filterRevisionsHelper = new FilterRevisionsHelper(toolStripTextBoxFilter, toolStripDropDownButton1, FileChanges, toolStripLabel2, this);
+            _filterBranchHelper = new FilterBranchHelper(toolStripBranches, toolStripDropDownButton2, FileChanges);
+            _filterRevisionsHelper = new FilterRevisionsHelper(toolStripTextBoxFilter, toolStripDropDownButton1, FileChanges, toolStripLabel2, this);
         }
 
         public FormFileHistory(GitUICommands aCommands, string fileName, GitRevision revision, bool filterByRevision)
@@ -61,7 +63,7 @@ namespace GitUI.CommandsDialogs
             loadBlameOnShowToolStripMenuItem.Checked = Settings.LoadBlameOnShow;
 
             if (filterByRevision && revision != null && revision.Guid != null)
-                filterBranchHelper.SetBranchFilter(revision.Guid, false);
+                _filterBranchHelper.SetBranchFilter(revision.Guid, false);
         }
 
         public FormFileHistory(GitUICommands aCommands, string fileName)
@@ -92,15 +94,19 @@ namespace GitUI.CommandsDialogs
         {
             FileChanges.Visible = true;
 
-            asyncLoader.Load(() => BuildFilter(FileName), (filter) =>
-            {
-                if (filter == null)
-                    return;
-                FileChanges.FixedFilter = filter;
-                FileChanges.FiltredFileName = FileName;
-                FileChanges.AllowGraphWithFilter = true;
-                FileChanges.Load();
-            });
+            _buildFilter = Task.Factory.StartNew(() => BuildFilter(FileName), _buildFilterTokenSource.Token);
+            _buildFilter.ContinueWith((task) =>
+                {
+                    if (task.Result == null)
+                        return;
+                    FileChanges.FixedFilter = task.Result;
+                    FileChanges.FiltredFileName = FileName;
+                    FileChanges.AllowGraphWithFilter = true;
+                    FileChanges.Load();
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private string BuildFilter(string fileName)
@@ -358,15 +364,15 @@ namespace GitUI.CommandsDialogs
         public override void AddTranslationItems(Translation translation)
         {
             base.AddTranslationItems(translation);
-            TranslationUtl.AddTranslationItemsFromFields(FormBrowseName, filterRevisionsHelper, translation);
-            TranslationUtl.AddTranslationItemsFromFields(FormBrowseName, filterBranchHelper, translation);
+            TranslationUtl.AddTranslationItemsFromFields(FormBrowseName, _filterRevisionsHelper, translation);
+            TranslationUtl.AddTranslationItemsFromFields(FormBrowseName, _filterBranchHelper, translation);
         }
 
         public override void TranslateItems(Translation translation)
         {
             base.TranslateItems(translation);
-            TranslationUtl.TranslateItemsFromFields(FormBrowseName, filterRevisionsHelper, translation);
-            TranslationUtl.TranslateItemsFromFields(FormBrowseName, filterBranchHelper, translation);
+            TranslationUtl.TranslateItemsFromFields(FormBrowseName, _filterRevisionsHelper, translation);
+            TranslationUtl.TranslateItemsFromFields(FormBrowseName, _filterBranchHelper, translation);
         }
 
         private void diffToolremotelocalStripMenuItem_Click(object sender, EventArgs e)

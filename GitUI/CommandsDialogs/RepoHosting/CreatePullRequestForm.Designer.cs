@@ -14,7 +14,7 @@ namespace GitUI.CommandsDialogs.RepoHosting
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-                remoteLoader.Cancel();
+                _remoteLoaderTokenSource.Cancel();
 
             if (disposing && (components != null))
             {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using GitCommands;
 using GitCommands.Repository;
@@ -77,7 +79,7 @@ namespace GitUI.CommandsDialogs
             try
             {
                 Cursor = Cursors.Default;
-                branchListLoader.Cancel();
+                _branchListLoaderTokenSource.Cancel();
 
                 var dirTo = _NO_TRANSLATE_To.Text;
                 if (!dirTo.EndsWith(Settings.PathSeparator.ToString()) && !dirTo.EndsWith(Settings.PathSeparatorWrong.ToString()))
@@ -259,7 +261,8 @@ namespace GitUI.CommandsDialogs
             ToTextUpdate(sender, e);
         }
 
-        private AsyncLoader branchListLoader = new AsyncLoader();
+        private CancellationTokenSource _branchListLoaderTokenSource = new CancellationTokenSource();
+        private Task<IList<GitHead>> _branchListLoader;
 
         private void UpdateBranches(IList<GitHead> branchList)
         {
@@ -277,7 +280,12 @@ namespace GitUI.CommandsDialogs
             Branches.DisplayMember = "LocalName";
             string from = _NO_TRANSLATE_From.Text;
             Cursor = Cursors.AppStarting;
-            branchListLoader.Load(() => { return Module.GetRemoteHeads(from, false, true); }, UpdateBranches);
+            _branchListLoader = Task.Factory.StartNew(() => Module.GetRemoteHeads(from, false, true),
+                _branchListLoaderTokenSource.Token);
+            _branchListLoader.ContinueWith((task) => UpdateBranches(task.Result),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
     }
 }

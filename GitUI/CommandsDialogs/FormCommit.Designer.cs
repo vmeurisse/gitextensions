@@ -19,14 +19,16 @@ namespace GitUI.CommandsDialogs
         {
             if (disposing)
             {
-                unstagedLoader.Cancel();
+                _unstagedLoaderTokenSource.Cancel();
+                _unstagedLoaderTokenSource = null;
+
+                if (_interactiveAddBashCloseWaitCts.IsValueCreated)
+                {
+                    _interactiveAddBashCloseWaitCts.Value.Cancel();
+                    _interactiveAddBashCloseWaitCts = null;
+                }
             }
 
-            if (disposing && interactiveAddBashCloseWaitCTS != null)
-            {
-                interactiveAddBashCloseWaitCTS.Cancel();
-                interactiveAddBashCloseWaitCTS = null;
-            }
 
             if (disposing && (components != null))
             {

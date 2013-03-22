@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using GitCommands;
 using GitUIPluginInterfaces.RepositoryHosts;
@@ -26,7 +28,8 @@ namespace GitUI.CommandsDialogs.RepoHosting
         private readonly string _chooseRemote;
         private List<IHostedRemote> _hostedRemotes;
         private string _currentBranch;
-        private AsyncLoader remoteLoader = new AsyncLoader();
+        private CancellationTokenSource _remoteLoaderTokenSource = new CancellationTokenSource();
+        private Task<IHostedRemote[]> _remoteLoader;
 
         public CreatePullRequestForm(GitUICommands aCommands, IRepositoryHostPlugin repoHost, string chooseRemote, string chooseBranch)
             : base(aCommands)
@@ -36,7 +39,7 @@ namespace GitUI.CommandsDialogs.RepoHosting
             _currentBranch = "";
             InitializeComponent();
             Translate();
-            prevTitle = _titleTB.Text;
+            _prevTitle = _titleTB.Text;
         }
 
         private void CreatePullRequestForm_Load(object sender, EventArgs e)
@@ -50,14 +53,14 @@ namespace GitUI.CommandsDialogs.RepoHosting
             _yourBranchesCB.Text = _strLoading.Text;
             _hostedRemotes = _repoHost.GetHostedRemotesForModule(Module);
             this.Mask();
-            remoteLoader.Load(
-                () => _hostedRemotes.Where(r => !r.IsOwnedByMe).ToArray(),
-                (IHostedRemote[] foreignHostedRemotes) =>
+            _remoteLoader = Task.Factory.StartNew(() => _hostedRemotes.Where(r => !r.IsOwnedByMe).ToArray());
+            _remoteLoader.ContinueWith((task) =>
                 {
-                    if (foreignHostedRemotes.Length == 0)
+                    if (task.Result.Length == 0)
                     {
-                        MessageBox.Show(this, _strFailedToCreatePullRequest.Text + Environment.NewLine + 
-                            _strPleaseCloneGitHubRep.Text, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(this, _strFailedToCreatePullRequest.Text + Environment.NewLine +
+                                              _strPleaseCloneGitHubRep.Text, "", MessageBoxButtons.OK,
+                                        MessageBoxIcon.Error);
                         Close();
                         return;
                     }
@@ -65,9 +68,12 @@ namespace GitUI.CommandsDialogs.RepoHosting
                     this.UnMask();
 
                     _currentBranch = Module.IsValidGitWorkingDir() ? Module.GetSelectedBranch() : "";
-                    LoadRemotes(foreignHostedRemotes);
+                    LoadRemotes(task.Result);
                     LoadMyBranches();
-                });
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void LoadRemotes(IHostedRemote[] foreignHostedRemotes)
@@ -100,24 +106,23 @@ namespace GitUI.CommandsDialogs.RepoHosting
             _remoteBranchesCB.Items.Clear();
             _remoteBranchesCB.Text = _strLoading.Text;
 
-            AsyncLoader.DoAsync(
-                () => _currentHostedRemote.GetHostedRepository().Branches,
-                branches =>
+            Task.Factory.StartNew(() => _currentHostedRemote.GetHostedRepository().Branches)
+                .ContinueWith((task) =>
                 {
-                    branches.Sort((a, b) => String.Compare(a.Name, b.Name, true));
+                    task.Result.Sort((a, b) => String.Compare(a.Name, b.Name, true));
                     int selectItem = 0;
                     _remoteBranchesCB.Items.Clear();
-                    for (int i = 0; i < branches.Count; i++)
+                    for (int i = 0; i < task.Result.Count; i++)
                     {
-                        if (branches[i].Name == _currentBranch)
+                        if (task.Result[i].Name == _currentBranch)
                             selectItem = i;
-                        _remoteBranchesCB.Items.Add(branches[i].Name);
+                        _remoteBranchesCB.Items.Add(task.Result[i].Name);
                     }
                     _createBtn.Enabled = true;
-                    if (branches.Count > 0)
+                    if (task.Result.Count > 0)
                         _remoteBranchesCB.SelectedIndex = selectItem;
                 },
-                ex => { throw ex; });
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private IHostedRemote MyRemote
@@ -131,40 +136,41 @@ namespace GitUI.CommandsDialogs.RepoHosting
             }
         }
 
-
         private void LoadMyBranches()
         {
-
             _yourBranchesCB.Items.Clear();
 
-            AsyncLoader.DoAsync(
-                () => MyRemote.GetHostedRepository().Branches,
-                branches =>
+            Task.Factory.StartNew(() =>
                 {
+                    var branches = MyRemote.GetHostedRepository().Branches;
                     branches.Sort((a, b) => String.Compare(a.Name, b.Name, true));
+                    return branches;
+                })
+                .ContinueWith((task) =>
+                {
                     int selectItem = 0;
-                    for (int i = 0; i < branches.Count; i++)
+                    for (int i = 0; i < task.Result.Count; i++)
                     {
-                        if (branches[i].Name == _currentBranch)
+                        if (task.Result[i].Name == _currentBranch)
                             selectItem = i;
-                        _yourBranchesCB.Items.Add(branches[i].Name);
+                        _yourBranchesCB.Items.Add(task.Result[i].Name);
                     }
                     _createBtn.Enabled = true;
-                    if (branches.Count > 0)
+                    if (task.Result.Count > 0)
                         _yourBranchesCB.SelectedIndex = selectItem;
                 },
-                ex => { throw ex; });
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private string prevTitle;
+        private string _prevTitle;
 
         private void _yourBranchCB_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (prevTitle.Equals(_titleTB.Text) && !_yourBranchesCB.Text.IsNullOrWhiteSpace())
+            if (_prevTitle.Equals(_titleTB.Text) && !_yourBranchesCB.Text.IsNullOrWhiteSpace())
             {
                 var lastMsg = Module.GetPreviousCommitMessages(MyRemote.Name.Combine("/", _yourBranchesCB.Text), 1).FirstOrDefault();
                 _titleTB.Text = lastMsg.TakeUntilStr("\n");
-                prevTitle = _titleTB.Text;
+                _prevTitle = _titleTB.Text;
             }
         }
 

@@ -67,7 +67,6 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Annotations.cs" />
-    <Compile Include="AsyncLoader.cs" />
     <Compile Include="CommitData.cs" />
     <Compile Include="Config\SettingKeyString.cs" />
     <Compile Include="DateTimeUtils.cs" />

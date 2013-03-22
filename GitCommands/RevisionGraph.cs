@@ -4,7 +4,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using GitCommands.Config;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GitCommands
 {
@@ -16,16 +17,16 @@ namespace GitCommands
     public sealed class RevisionGraph : IDisposable
     {
         public event EventHandler Exited;
-        public event EventHandler<AsyncErrorEventArgs> Error 
+        private event EventHandler<ErrorEventArgs> _error = delegate { };
+        public event EventHandler<ErrorEventArgs> Error 
         {
             add 
             {
-                backgroundLoader.LoadingError += value;
+                _error += value;
             }
-            
             remove 
             {
-                backgroundLoader.LoadingError -= value;
+                _error -= value;
             }
         }
         public event EventHandler Updated;
@@ -42,16 +43,26 @@ namespace GitCommands
             public readonly GitRevision Revision;
         }
 
+        public class ErrorEventArgs : EventArgs
+        {
+            public ErrorEventArgs(Exception exception)
+            {
+                Exception = exception;
+            }
+
+            public Exception Exception { get; private set; }
+        }
+
         public bool BackgroundThread { get; set; }
         public bool ShaOnly { get; set; }
 
-        private readonly char[] splitChars = " \t\n".ToCharArray();
+        private readonly char[] _splitChars = " \t\n".ToCharArray();
 
-        private readonly char[] hexChars = "0123456789ABCDEFabcdef".ToCharArray();
+        private readonly char[] _hexChars = "0123456789ABCDEFabcdef".ToCharArray();
 
-        private const string COMMIT_BEGIN = "<(__BEGIN_COMMIT__)>"; // Something unlikely to show up in a comment
+        private const string CommitBegin = "<(__BEGIN_COMMIT__)>"; // Something unlikely to show up in a comment
 
-        private Dictionary<string, List<GitHead>> heads;
+        private Dictionary<string, List<GitHead>> _heads;
 
 
         private enum ReadStep
@@ -72,11 +83,12 @@ namespace GitCommands
             Done,
         }
 
-        private ReadStep nextStep = ReadStep.Commit;
+        private ReadStep _nextStep = ReadStep.Commit;
 
-        private GitRevision revision;
+        private GitRevision _revision;
 
-        private AsyncLoader backgroundLoader = new AsyncLoader();
+        private CancellationTokenSource _backgroundLoaderTokenSource = new CancellationTokenSource();
+        private Task _backgroundLoader;
 
         private GitModule Module;
 
@@ -93,7 +105,7 @@ namespace GitCommands
 
         public void Dispose()
         {
-            backgroundLoader.Cancel();
+            _backgroundLoaderTokenSource.Cancel();
         }
 
         public string LogParam = "HEAD --all";//--branches --remotes --tags";
@@ -105,22 +117,37 @@ namespace GitCommands
         {
             if (BackgroundThread)
             {
-                backgroundLoader.Load(execute, executed);
+                _backgroundLoader = Task.Factory.StartNew(execute, _backgroundLoaderTokenSource.Token);
+                _backgroundLoader.ContinueWith((task) =>
+                    {
+
+                        try
+                        {
+                            executed();
+                        }
+                        catch (Exception ex)
+                        {
+                            _error(this, new ErrorEventArgs(ex));
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnRanToCompletion,
+                    TaskScheduler.FromCurrentSynchronizationContext());
             }
             else
             {
-                execute(new FixedLoadingTaskState(false));
+                execute();
                 executed();
             }
         }
 
-        private void execute(ILoadingTaskState taskState)
+        private void execute()
         {
             RevisionCount = 0;
-            heads = GetHeads().ToDictionaryOfList(head => head.Guid);
+            _heads = GetHeads().ToDictionaryOfList(head => head.Guid);
 
             string formatString =
-                /* <COMMIT>       */ COMMIT_BEGIN + "%n" +
+                /* <COMMIT>       */ CommitBegin + "%n" +
                 /* Hash           */ "%H%n" +
                 /* Parents        */ "%P%n";
             if (!ShaOnly)
@@ -168,8 +195,8 @@ namespace GitCommands
                 };
 
                 Process p = gitGetGraphCommand.CmdStartProcess(Settings.GitCommand, arguments);
-                
-                if (taskState.IsCanceled())
+
+                if (_backgroundLoaderTokenSource.IsCancellationRequested)
                     return;
 
                 previousFileName = null;
@@ -181,7 +208,7 @@ namespace GitCommands
                 {
                     line = p.StandardOutput.ReadLine();
                     //commit message is not encoded by git
-                    if (nextStep != ReadStep.CommitMessage)
+                    if (_nextStep != ReadStep.CommitMessage)
                         line = GitModule.ReEncodeString(line, GitModule.LosslessEncoding, LogOutputEncoding);
 
                     if (line != null)
@@ -191,7 +218,7 @@ namespace GitCommands
                             dataReceived(entry);
                         }
                     }
-                } while (line != null && !taskState.IsCanceled());
+                } while (line != null && !_backgroundLoaderTokenSource.IsCancellationRequested);
 
             }
         }
@@ -234,24 +261,24 @@ namespace GitCommands
 
         void finishRevision()
         {
-            if (revision != null)
+            if (_revision != null)
             {
-                if (revision.Name == null)                
-                    revision.Name = previousFileName;
+                if (_revision.Name == null)                
+                    _revision.Name = previousFileName;
                 else
-                    previousFileName = revision.Name;
+                    previousFileName = _revision.Name;
             }
-            if (revision == null || revision.Guid.Trim(hexChars).Length == 0)
+            if (_revision == null || _revision.Guid.Trim(_hexChars).Length == 0)
             {
-                if ((revision == null) || (InMemFilter == null) || InMemFilter.PassThru(revision))
+                if ((_revision == null) || (InMemFilter == null) || InMemFilter.PassThru(_revision))
                 {
-                    if (revision != null)
+                    if (_revision != null)
                         RevisionCount++;
                     if (Updated != null)
-                        Updated(this, new RevisionGraphUpdatedEventArgs(revision));
+                        Updated(this, new RevisionGraphUpdatedEventArgs(_revision));
                 }
             }
-            nextStep = ReadStep.Commit;
+            _nextStep = ReadStep.Commit;
         }
 
         void dataReceived(string line)
@@ -259,21 +286,21 @@ namespace GitCommands
             if (line == null)
                 return;
 
-            if (line == COMMIT_BEGIN)
+            if (line == CommitBegin)
             {
                 // a new commit finalizes the last revision
                 finishRevision();
 
-                nextStep = ReadStep.Commit;
+                _nextStep = ReadStep.Commit;
             }
 
-            switch (nextStep)
+            switch (_nextStep)
             {
                 case ReadStep.Commit:
                     // Sanity check
-                    if (line == COMMIT_BEGIN)
+                    if (line == CommitBegin)
                     {
-                        revision = new GitRevision(Module, null);
+                        _revision = new GitRevision(Module, null);
                     }
                     else
                     {
@@ -283,69 +310,69 @@ namespace GitCommands
                     break;
 
                 case ReadStep.Hash:
-                    revision.Guid = line;
+                    _revision.Guid = line;
 
                     List<GitHead> headList;
-                    if (heads.TryGetValue(revision.Guid, out headList))
-                        revision.Heads.AddRange(headList);
+                    if (_heads.TryGetValue(_revision.Guid, out headList))
+                        _revision.Heads.AddRange(headList);
                     
                     break;
 
                 case ReadStep.Parents:
-                    revision.ParentGuids = line.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
+                    _revision.ParentGuids = line.Split(_splitChars, StringSplitOptions.RemoveEmptyEntries);
                     break;
 
                 case ReadStep.Tree:
-                    revision.TreeGuid = line;
+                    _revision.TreeGuid = line;
                     break;
 
                 case ReadStep.AuthorName:
-                    revision.Author = line;
+                    _revision.Author = line;
                     break;
 
                 case ReadStep.AuthorEmail:
-                    revision.AuthorEmail = line;
+                    _revision.AuthorEmail = line;
                     break;
 
                 case ReadStep.AuthorDate:
                     {
                         DateTime dateTime;
                         if (DateTimeUtils.TryParseUnixTime(line, out dateTime))
-                            revision.AuthorDate = dateTime;
+                            _revision.AuthorDate = dateTime;
                     }
                     break;
 
                 case ReadStep.CommitterName:
-                    revision.Committer = line;
+                    _revision.Committer = line;
                     break;
 
                 case ReadStep.CommitterEmail:
-                    revision.CommitterEmail = line;
+                    _revision.CommitterEmail = line;
                     break;
 
                 case ReadStep.CommitterDate:
                     {
                         DateTime dateTime;
                         if (DateTimeUtils.TryParseUnixTime(line, out dateTime))
-                            revision.CommitDate = dateTime;
+                            _revision.CommitDate = dateTime;
                     }
                     break;
 
                 case ReadStep.CommitMessageEncoding:
-                    revision.MessageEncoding = line;
+                    _revision.MessageEncoding = line;
                     break;
                 
                 case ReadStep.CommitMessage:
-                    revision.Message = Module.ReEncodeCommitMessage(line, revision.MessageEncoding);
+                    _revision.Message = Module.ReEncodeCommitMessage(line, _revision.MessageEncoding);
 
                     break;
 
                 case ReadStep.FileName:
-                    revision.Name = line;
+                    _revision.Name = line;
                     break;
             }
 
-            nextStep++;
+            _nextStep++;
         }
     }
 }

@@ -13,8 +13,10 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            _tagsLoader.Cancel();
-            _branchesLoader.Cancel();
+            if (_tagsTokenSource != null)
+                _tagsTokenSource.Cancel();
+            if (_branchesTokenSource != null)
+                _branchesTokenSource.Cancel();
 
             if (disposing && (components != null))
             {

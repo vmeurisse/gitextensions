@@ -13,7 +13,7 @@ namespace GitUI.CommandsDialogs.RepoHosting
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            loader.Cancel();
+            _loaderTokenSource.Cancel();
 
             if (disposing && (components != null))
             {

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using GitUIPluginInterfaces;
 
 namespace GitCommands.Statistics
@@ -15,18 +17,6 @@ namespace GitCommands.Statistics
         public bool RespectMailmap { get; set; }
 
         public event EventHandler Exited;
-        public event EventHandler<AsyncErrorEventArgs> Error
-        {
-            add
-            {
-                backgroundLoader.LoadingError += value;
-            }
-
-            remove
-            {
-                backgroundLoader.LoadingError -= value;
-            }
-        }
         public event UpdateEventHandler Updated;
 
         public struct DataPoint
@@ -61,15 +51,16 @@ namespace GitCommands.Statistics
             public string author;
             public DataPoint data;
         }
-        
 
-        private AsyncLoader backgroundLoader = new AsyncLoader();
+        private CancellationTokenSource _backgroundLoaderTokenSource = new CancellationTokenSource();
+        private Task _backgroundLoader;
         private readonly IGitModule Module;
 
         public ImpactLoader(IGitModule aModule)
         {
             Module = aModule;
         }
+
         ~ImpactLoader()
         {
             Dispose();
@@ -77,12 +68,20 @@ namespace GitCommands.Statistics
 
         public void Dispose()
         {
-            backgroundLoader.Cancel();
+            _backgroundLoaderTokenSource.Cancel();
         }
 
         public void Execute()
         {
-            backgroundLoader.Load(execute, executed);
+            _backgroundLoader = Task.Factory.StartNew(execute, _backgroundLoaderTokenSource.Token);
+            _backgroundLoader.ContinueWith((task) =>
+                {
+                    if (Exited != null)
+                        Exited(this, EventArgs.Empty);
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private bool showSubmodules;
@@ -92,13 +91,13 @@ namespace GitCommands.Statistics
             set { Dispose(); showSubmodules = value; }
         }
 
-        private void execute(ILoadingTaskState taskState)
+        private void execute()
         {
             string authorName = this.RespectMailmap ? "%aN" : "%an";
 
             string command = "log --pretty=tformat:\"--- %ad --- " + authorName + "\" --numstat --date=iso -C --all --no-merges";
 
-            LoadModuleInfo(command, Module, taskState);
+            LoadModuleInfo(command, Module);
 
             if (ShowSubmodules)
             {
@@ -108,13 +107,13 @@ namespace GitCommands.Statistics
                     IGitModule submodule = Module.GetISubmodule(submoduleName);
 
                     if (submodule.IsValidGitWorkingDir())
-                        LoadModuleInfo(command, submodule, taskState);
+                        LoadModuleInfo(command, submodule);
 
                 }
             }
         }
 
-        private void LoadModuleInfo(string command, IGitModule module, ILoadingTaskState taskState)
+        private void LoadModuleInfo(string command, IGitModule module)
         {
             using (GitCommandsInstance git = new GitCommandsInstance(module))
             {
@@ -126,7 +125,7 @@ namespace GitCommands.Statistics
                 string line = p.StandardOutput.ReadLine();
 
                 // Analyze commit listing
-                while (!taskState.IsCanceled())
+                while (!_backgroundLoaderTokenSource.IsCancellationRequested)
                 {
                     Commit commit = new Commit();
 
@@ -163,7 +162,7 @@ namespace GitCommands.Statistics
                     commit.data.DeletedLines = 0;
 
                     // Parse commit lines
-                    while ((line = p.StandardOutput.ReadLine()) != null && !line.StartsWith("--- ") && !taskState.IsCanceled())
+                    while ((line = p.StandardOutput.ReadLine()) != null && !line.StartsWith("--- ") && !_backgroundLoaderTokenSource.IsCancellationRequested)
                     {
                         // Skip empty line
                         if (string.IsNullOrEmpty(line))
@@ -179,18 +178,11 @@ namespace GitCommands.Statistics
                         }
                     }
 
-                    if (Updated != null && !taskState.IsCanceled())
+                    if (Updated != null && !_backgroundLoaderTokenSource.IsCancellationRequested)
                         Updated(commit);
                 }
             }
         }
-
-        private void executed()
-        {
-            if (Exited != null)
-                Exited(this, EventArgs.Empty);        
-        }
-        
 
         public static void AddIntermediateEmptyWeeks(
             ref SortedDictionary<DateTime, Dictionary<string, DataPoint>> impact, Dictionary<string, DataPoint> authors)

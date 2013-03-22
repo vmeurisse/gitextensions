@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using GitCommands;
+using System.Threading;
 
 namespace GitUI.CommandsDialogs
 {
     public partial class SearchWindow<T> : Form where T : class
     {
-        private readonly Func<string, IList<T>> getCandidates;
-        private AsyncLoader backgroundLoader = new AsyncLoader();
+        private readonly Func<string, IList<T>> _getCandidates;
+        private CancellationTokenSource _backgroundLoaderTokenSource = new CancellationTokenSource();
+        private Task<IList<T>> _backgroundLoader;
         
         public SearchWindow(Func<string, IList<T>> getCandidates)
         {
@@ -20,7 +22,7 @@ namespace GitUI.CommandsDialogs
             {
                 throw new InvalidOperationException("getCandidates cannot be null");
             }
-            this.getCandidates = getCandidates;
+            this._getCandidates = getCandidates;
             AutoFit();
 
             if (Parent == null)
@@ -83,14 +85,18 @@ namespace GitUI.CommandsDialogs
 
         private void SearchWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            backgroundLoader.Cancel();
+            _backgroundLoaderTokenSource.Cancel();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             string  _selectedText = textBox1.Text;
 
-            backgroundLoader.Load(() => getCandidates(_selectedText), SearchForCandidates);
+            _backgroundLoader = Task.Factory.StartNew(() => _getCandidates(_selectedText), _backgroundLoaderTokenSource.Token);
+            _backgroundLoader.ContinueWith((task) => SearchForCandidates(task.Result),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void textBox1_KeyUp(object sender, KeyEventArgs e)

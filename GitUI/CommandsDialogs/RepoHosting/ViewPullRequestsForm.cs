@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using GitCommands;
 using GitUIPluginInterfaces.RepositoryHosts;
@@ -26,7 +28,8 @@ namespace GitUI.CommandsDialogs.RepoHosting
 
         private readonly IRepositoryHostPlugin _gitHoster;
         private bool _isFirstLoad;
-        private AsyncLoader loader = new AsyncLoader();
+        private CancellationTokenSource _loaderTokenSource = new CancellationTokenSource();
+        private Task<List<IHostedRemote>> _loader;
 
         // only for translation
         private ViewPullRequestsForm()
@@ -38,13 +41,7 @@ namespace GitUI.CommandsDialogs.RepoHosting
         {
             InitializeComponent();
             Translate();
-            loader.LoadingError += (sender, ex) =>
-                {
-                    MessageBox.Show(this, ex.Exception.Message, _strError.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    this.UnMask();
-                };
         }
-
 
         public ViewPullRequestsForm(GitUICommands aCommands, IRepositoryHostPlugin gitHoster)
             : this(aCommands)
@@ -69,24 +66,35 @@ namespace GitUI.CommandsDialogs.RepoHosting
             _isFirstLoad = true;
 
             this.Mask();
-            loader.Load(
-                () =>
+
+            _loader = Task.Factory.StartNew(() =>
                 {
                     var t = _gitHoster.GetHostedRemotesForModule(Module).ToList();
                     foreach (var el in t)
                         el.GetHostedRepository(); // We do this now because we want to do it in the async part.
                     return t;
-                },
-                hostedRemotes =>
-                {
-                    _hostedRemotes = hostedRemotes;
-                    _selectHostedRepoCB.Items.Clear();
-                    foreach (var hostedRepo in _hostedRemotes)
-                        _selectHostedRepoCB.Items.Add(hostedRepo.GetHostedRepository());
-
-                    SelectNextHostedRepository();
-                    this.UnMask();
                 });
+            _loader.ContinueWith((task) =>
+                {
+                    try
+                    {
+                        _hostedRemotes = task.Result;
+                        _selectHostedRepoCB.Items.Clear();
+                        foreach (var hostedRepo in _hostedRemotes)
+                            _selectHostedRepoCB.Items.Add(hostedRepo.GetHostedRepository());
+
+                        SelectNextHostedRepository();
+                        this.UnMask();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(this, ex.Message, _strError.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        this.UnMask();
+                    }
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void _selectedOwner_SelectedIndexChanged(object sender, EventArgs e)
@@ -97,11 +105,21 @@ namespace GitUI.CommandsDialogs.RepoHosting
             _selectHostedRepoCB.Enabled = false;
             ResetAllAndShowLoadingPullRequests();
 
-            AsyncLoader.DoAsync<List<IPullRequestInformation>>(
-               hostedRepo.GetPullRequests,
-               res => { SetPullRequestsData(res); _selectHostedRepoCB.Enabled = true; },
-               ex => MessageBox.Show(this, _strFailedToFetchPullData.Text + Environment.NewLine + ex.Message, _strError.Text)
-            );
+            Task.Factory.StartNew(() => hostedRepo.GetPullRequests())
+                .ContinueWith((task) =>
+                {
+                    try
+                    {
+                        SetPullRequestsData(task.Result);
+                        _selectHostedRepoCB.Enabled = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(this, _strFailedToFetchPullData.Text + Environment.NewLine + ex.Message,
+                                        _strError.Text);
+                    }
+                },
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void SetPullRequestsData(List<IPullRequestInformation> infos)
@@ -195,14 +213,21 @@ namespace GitUI.CommandsDialogs.RepoHosting
 
         private void LoadDiscussion()
         {
-            AsyncLoader.DoAsync(
-                () => _currentPullRequestInfo.Discussion,
-                LoadDiscussion,
-                ex =>
-                {
-                    MessageBox.Show(this, _strCouldNotLoadDiscussion.Text + Environment.NewLine + ex.Message, _strError.Text);
-                    LoadDiscussion(null);
-                });
+            Task.Factory.StartNew(() => _currentPullRequestInfo.Discussion)
+                .ContinueWith((task) =>
+                    {
+                        try
+                        {
+                            LoadDiscussion(task.Result);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(this, _strCouldNotLoadDiscussion.Text + Environment.NewLine + ex.Message,
+                                            _strError.Text);
+                            LoadDiscussion(null);
+                        }
+                    },
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void LoadDiscussion(IPullRequestDiscussion discussion)
@@ -222,10 +247,20 @@ namespace GitUI.CommandsDialogs.RepoHosting
 
         private void LoadDiffPatch()
         {
-            AsyncLoader.DoAsync(
-                () => _currentPullRequestInfo.DiffData,
-                SplitAndLoadDiff,
-                ex => MessageBox.Show(this, _strFailedToLoadDiffData.Text + Environment.NewLine + ex.Message, _strError.Text));
+            Task.Factory.StartNew(() => _currentPullRequestInfo.DiffData)
+                .ContinueWith((task) =>
+                {
+                    try
+                    {
+                        SplitAndLoadDiff(task.Result);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(this, _strFailedToLoadDiffData.Text + Environment.NewLine + ex.Message,
+                                        _strError.Text);
+                    }
+                },
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         Dictionary<string, string> _diffCache;

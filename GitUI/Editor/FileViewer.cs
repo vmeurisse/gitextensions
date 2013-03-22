@@ -4,6 +4,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using GitCommands;
 using GitUI.Hotkey;
@@ -15,7 +17,8 @@ namespace GitUI.Editor
     [DefaultEvent("SelectedLineChanged")]
     public partial class FileViewer : GitModuleControl
     {
-        private readonly AsyncLoader _async;
+        private CancellationTokenSource _asyncTokenSource = new CancellationTokenSource();
+        private Task _async;
         private int _currentScrollPos = -1;
         private bool _currentViewIsPatch;
         private readonly IFileViewer _internalFileViewer;
@@ -43,16 +46,6 @@ namespace GitUI.Editor
             internalFileViewerControl.Dock = DockStyle.Fill;
             Controls.Add(internalFileViewerControl);
 
-            _async = new AsyncLoader();
-            _async.LoadingError +=
-                (sender, args) =>
-                {
-                    ResetForText(null);
-                    _internalFileViewer.SetText("Unsupported file: \n\n" + args.Exception.Message);
-                    if (TextLoaded != null)
-                        TextLoaded(this, null);
-                };
-
             IgnoreWhitespaceChanges = false;
 
             IsReadOnly = true;
@@ -74,6 +67,14 @@ namespace GitUI.Editor
             if (RunTime() && ContextMenuStrip == null)
                 ContextMenuStrip = contextMenu;
             contextMenu.Opening += ContextMenu_Opening; 
+        }
+
+        private void ViewExceptionMessage(string message)
+        {
+            ResetForText(null);
+            _internalFileViewer.SetText("Unsupported file: \n\n" + message);
+            if (TextLoaded != null)
+                TextLoaded(this, null);
         }
 
         void FileViewer_GitUICommandsSourceSet(object sender, IGitUICommandsSource uiCommandsSource)
@@ -362,13 +363,63 @@ namespace GitUI.Editor
             bool isSubmodule, GitSubmoduleStatus status)
         {
             if (!isSubmodule)
-                _async.Load(() => Module.GetCurrentChanges(fileName, oldFileName, staged, GetExtraDiffArguments(), Encoding),
-                    ViewStagingPatch);
+            {
+                _async = Task.Factory.StartNew(() => Module.GetCurrentChanges(fileName, oldFileName, staged,
+                     GetExtraDiffArguments(), Encoding), _asyncTokenSource.Token)
+                    .ContinueWith((task) =>
+                    {
+                        try
+                        {
+                            ViewStagingPatch(task.Result);
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewExceptionMessage(ex.Message);
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnRanToCompletion,
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            }
             else if (status != null)
-                _async.Load(() => GitCommandHelpers.ProcessSubmoduleStatus(Module, status), ViewPatch);
+            {
+                _async = Task.Factory.StartNew(() => GitCommandHelpers.ProcessSubmoduleStatus(Module, status),
+                    _asyncTokenSource.Token)
+                    .ContinueWith((task) =>
+                    {
+                        try
+                        {
+                            ViewPatch(task.Result);
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewExceptionMessage(ex.Message);
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnRanToCompletion,
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            }
             else
-                _async.Load(() => GitCommandHelpers.ProcessSubmodulePatch(Module, 
-                    Module.GetCurrentChanges(fileName, oldFileName, staged, GetExtraDiffArguments(), Encoding)), ViewPatch);
+            {
+                _async = Task.Factory.StartNew(() => Module.GetCurrentChanges(fileName, oldFileName, staged,
+                    GetExtraDiffArguments(), Encoding), _asyncTokenSource.Token)
+                    .ContinueWith((task) => GitCommandHelpers.ProcessSubmodulePatch(Module, task.Result))
+                    .ContinueWith((task) =>
+                    {
+                        try
+                        {
+                            ViewPatch(task.Result);
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewExceptionMessage(ex.Message);
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnRanToCompletion,
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            }
         }
 
         public void ViewStagingPatch(Patch patch)
@@ -400,7 +451,21 @@ namespace GitUI.Editor
 
         public void ViewPatch(Func<string> loadPatchText)
         {
-            _async.Load(loadPatchText, ViewPatch);
+            _async = Task.Factory.StartNew(loadPatchText, _asyncTokenSource.Token)
+                .ContinueWith((task) =>
+                {
+                    try
+                    {
+                        ViewPatch(task.Result);
+                    }
+                    catch (Exception ex)
+                    {
+                        ViewExceptionMessage(ex.Message);
+                    }
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public void ViewText(string fileName, string text)
@@ -449,7 +514,21 @@ namespace GitUI.Editor
             {
                 if (GitModule.IsValidGitWorkingDir(fullPath))
                 {
-                    _async.Load(getSubmoduleText, text => ViewText(fileName, text));
+                    _async = Task.Factory.StartNew(getSubmoduleText, _asyncTokenSource.Token)
+                        .ContinueWith((task) =>
+                        {
+                            try
+                            {
+                                ViewText(fileName, task.Result);
+                            }
+                            catch (Exception ex)
+                            {
+                                ViewExceptionMessage(ex.Message);
+                            }
+                        },
+                        CancellationToken.None,
+                        TaskContinuationOptions.OnlyOnRanToCompletion,
+                        TaskScheduler.FromCurrentSynchronizationContext());
                 }
                 else
                 {
@@ -458,25 +537,35 @@ namespace GitUI.Editor
             }
             else if (IsImage(fileName))
             {
-                _async.Load(getImage,
-                            image =>
+                _async = Task.Factory.StartNew(getImage, _asyncTokenSource.Token)
+                    .ContinueWith((task) =>
+                    {
+                        try
+                        {
+                            ResetForImage();
+                            if (task.Result != null)
                             {
-                                ResetForImage();
-                                if (image != null)
+                                if (task.Result.Size.Height > PictureBox.Size.Height ||
+                                    task.Result.Size.Width > PictureBox.Size.Width)
                                 {
-                                    if (image.Size.Height > PictureBox.Size.Height ||
-                                        image.Size.Width > PictureBox.Size.Width)
-                                    {
-                                        PictureBox.SizeMode = PictureBoxSizeMode.Zoom;
-                                    }
-                                    else
-                                    {
-                                        PictureBox.SizeMode = PictureBoxSizeMode.CenterImage;
-                                    }
-
+                                    PictureBox.SizeMode = PictureBoxSizeMode.Zoom;
                                 }
-                                PictureBox.Image = image;
-                            });
+                                else
+                                {
+                                    PictureBox.SizeMode = PictureBoxSizeMode.CenterImage;
+                                }
+
+                            }
+                            PictureBox.Image = task.Result;
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewExceptionMessage(ex.Message);
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnRanToCompletion,
+                    TaskScheduler.FromCurrentSynchronizationContext());
             }
             else if (IsBinaryFile(fileName))
             {
@@ -484,7 +573,21 @@ namespace GitUI.Editor
             }
             else
             {
-                _async.Load(getFileText, text => ViewText(fileName, text));
+                _async = Task.Factory.StartNew(getFileText, _asyncTokenSource.Token)
+                    .ContinueWith((task) =>
+                    {
+                        try
+                        {
+                            ViewText(fileName, task.Result);
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewExceptionMessage(ex.Message);
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnRanToCompletion,
+                    TaskScheduler.FromCurrentSynchronizationContext());
             }
         }
 

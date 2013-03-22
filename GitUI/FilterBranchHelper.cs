@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using GitCommands;
 
@@ -59,21 +61,22 @@ namespace GitUI
 
             _NO_TRANSLATE_toolStripBranches.Items.Clear();
 
-            AsyncLoader.DoAsync(() => GetBranchAndTagHeads(local, remote),
-                (List<string> branches) =>
+            Task.Factory.StartNew(() => GetBranchAndTagHeads(local, remote))
+                .ContinueWith((task) =>
                 {
-
-                    foreach (var branch in branches)
+                    foreach (var branch in task.Result)
                         _NO_TRANSLATE_toolStripBranches.Items.Add(branch);
 
                     var autoCompleteList = _NO_TRANSLATE_toolStripBranches.AutoCompleteCustomSource.Cast<string>();
-                    if (!autoCompleteList.SequenceEqual(branches))
+                    if (!autoCompleteList.SequenceEqual(task.Result))
                     {
                         _NO_TRANSLATE_toolStripBranches.AutoCompleteCustomSource.Clear();
-                        _NO_TRANSLATE_toolStripBranches.AutoCompleteCustomSource.AddRange(branches.ToArray());
+                        _NO_TRANSLATE_toolStripBranches.AutoCompleteCustomSource.AddRange(task.Result.ToArray());
                     }
-                }
-                    );
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private List<string> GetBranchHeads(bool local, bool remote)

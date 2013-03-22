@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using GitCommands;
 using GitUI.CommitInfo;
@@ -185,8 +187,8 @@ namespace GitUI.Blame
         {
             BlameCommitter.ScrollPos = BlameFile.ScrollPos;
         }
-        
-        private AsyncLoader blameLoader = new AsyncLoader();
+
+        private Task<GitBlame> blameLoader;
 
         public void LoadBlame(GitRevision revision, List<string> children, string fileName, RevisionGrid revGrid, Control controlToMask, Encoding encoding)
         {
@@ -196,50 +198,53 @@ namespace GitUI.Blame
 
             if (controlToMask != null)
                 controlToMask.Mask();
-
-            var scrollpos = BlameFile.ScrollPos;
-
-            var blameCommitter = new StringBuilder();
-            var blameFile = new StringBuilder();
             _revGrid = revGrid;
             _fileName = fileName;
             _encoding = encoding;
             string guid = revision.Guid;
 
-            blameLoader.Load(() =>
-            {
-                _blame = Module.Blame(fileName, guid, encoding);
-            },
-            () =>
-            {
+            blameLoader = Task.Factory.StartNew(() => _blame = Module.Blame(fileName, guid, encoding));
+            blameLoader.ContinueWith((task) => ProcessBlame(revision, children, controlToMask),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.FromCurrentSynchronizationContext());
+        }
 
-                for (int i = 0; i < _blame.Lines.Count; i++)
+        private void ProcessBlame(GitRevision revision, List<string> children, Control controlToMask)
+        {
+            var scrollpos = BlameFile.ScrollPos;
+
+            var blameCommitter = new StringBuilder();
+            var blameFile = new StringBuilder();
+            for (int i = 0; i < _blame.Lines.Count; i++)
+            {
+                GitBlameLine blameLine = _blame.Lines[i];
+                GitBlameHeader blameHeader =
+                    _blame.FindHeaderForCommitGuid(blameLine.CommitGuid);
+                if (i > 0 && _blame.Lines[i - 1].CommitGuid == blameLine.CommitGuid)
                 {
-                    GitBlameLine blameLine = _blame.Lines[i];
-                    GitBlameHeader blameHeader = _blame.FindHeaderForCommitGuid(blameLine.CommitGuid);
-                    if (i > 0 && _blame.Lines[i - 1].CommitGuid == blameLine.CommitGuid)
-                    {
-                        blameCommitter.AppendLine(new string(' ', 200));
-                    }
-                    else
-                    {
-                        blameCommitter.AppendLine((blameHeader.Author + " - " + blameHeader.AuthorTime + " - " + blameHeader.FileName + new string(' ', 100)).Trim(new[] { '\r', '\n' }));
-                    }
-                    if (blameLine.LineText == null)
-                        blameFile.AppendLine("");
-                    else
-                        blameFile.AppendLine(blameLine.LineText.Trim(new char[] { '\r', '\n' }));
+                    blameCommitter.AppendLine(new string(' ', 200));
                 }
+                else
+                {
+                    blameCommitter.AppendLine(
+                        (blameHeader.Author + " - " + blameHeader.AuthorTime + " - " +
+                         blameHeader.FileName + new string(' ', 100)).Trim(new[] { '\r', '\n' }));
+                }
+                if (blameLine.LineText == null)
+                    blameFile.AppendLine("");
+                else
+                    blameFile.AppendLine(blameLine.LineText.Trim(new char[] { '\r', '\n' }));
+            }
 
-                BlameCommitter.ViewText("committer.txt", blameCommitter.ToString());
-                BlameFile.ViewText(fileName, blameFile.ToString());
-                BlameFile.ScrollPos = scrollpos;
+            BlameCommitter.ViewText("committer.txt", blameCommitter.ToString());
+            BlameFile.ViewText(_fileName, blameFile.ToString());
+            BlameFile.ScrollPos = scrollpos;
 
-                CommitInfo.SetRevisionWithChildren(revision, children);
+            CommitInfo.SetRevisionWithChildren(revision, children);
 
-                if (controlToMask != null)
-                    controlToMask.UnMask();
-            });
+            if (controlToMask != null)
+                controlToMask.UnMask();
         }
 
         private void ActiveTextAreaControlDoubleClick(object sender, EventArgs e)
