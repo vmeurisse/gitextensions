@@ -7,11 +7,15 @@ using LibGit2Sharp;
 namespace GitCommands
 {
     [Flags]
-    public enum LogOptions
+    public enum RefsFiltringOptions
     {
-        All = 1,            // --all
-        Boundary = 2,       // --boundary
-        ShowGitNotes = 4    // --not --glob=notes --not
+        Branches = 1,       // --branches
+        Remotes = 2,        // --remotes
+        Tags = 4,           // --tags
+        Stashes = 8,        //
+        All = 15,           // --all
+        Boundary = 16,      // --boundary
+        ShowGitNotes = 32   // --not --glob=notes --not
     }
 
     public abstract class RevisionGraphInMemFilter
@@ -72,7 +76,7 @@ namespace GitCommands
             _backgroundLoader.Cancel();
         }
 
-        public LogOptions LogParam = LogOptions.All;
+        public RefsFiltringOptions RefsOptions = RefsFiltringOptions.All | RefsFiltringOptions.Boundary;
         public string Filter = String.Empty;
         public string BranchFilter = String.Empty;
         public RevisionGraphInMemFilter InMemFilter;
@@ -107,7 +111,7 @@ namespace GitCommands
             }
 
             // TODO: Support BranchFilter
-            // TODO: Support LogParam
+            // TODO: Support RefsOptions
             // TODO: Support Filter
             foreach (var commit in _module.Repository.Commits.QueryBy(filter))
             {
