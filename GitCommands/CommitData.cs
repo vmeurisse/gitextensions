@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Net;
+using System.Diagnostics;
 using LibGit2Sharp;
 
 namespace GitCommands
@@ -85,6 +86,18 @@ namespace GitCommands
         }
 
         /// <summary>
+        /// Returns an array of strings containg titles of fields field returned by GetHeader.
+        /// Used to calculate layout in advance
+        /// </summary>
+        /// <returns></returns>
+        public static string[] GetPossibleHeaders()
+        {
+            return new string[] {Strings.GetAuthorText(), Strings.GetAuthorDateText(), Strings.GetCommitterText(),
+                                 Strings.GetCommitDateText(), Strings.GetCommitHashText(), Strings.GetChildrenText(),
+                                 Strings.GetParentsText()};
+        }
+
+        /// <summary>
         /// Generate header.
         /// </summary>
         /// <returns></returns>
@@ -104,14 +117,56 @@ namespace GitCommands
             return RemoveRedundancies(header.ToString());
         }
 
-        private string GetEmail(string author)
+        private static string GetEmail(string author)
         {
-            if (String.IsNullOrEmpty(Author))
+            if (String.IsNullOrEmpty(author))
                 return "";
-            int ind = Author.IndexOf("<") + 1;
+            int ind = author.IndexOf("<") + 1;
             if (ind == -1)
                 return "";
-            return Author.Substring(ind, Author.LastIndexOf(">") - ind);
+            return author.Substring(ind, author.LastIndexOf(">") - ind);
+        }
+
+        /// <summary>
+        /// Gets the commit info for submodule.
+        /// </summary>
+        public static void UpdateCommitMessage(CommitData data, GitModule module, string sha1, ref string error)
+        {
+            if (module == null)
+                throw new ArgumentNullException("module");
+            if (sha1 == null)
+                throw new ArgumentNullException("sha1");
+
+            //Do not cache this command, since notes can be added
+            string arguments = string.Format(CultureInfo.InvariantCulture,
+                    "log -1 --pretty=\"format:" + ShortLogFormat + "\" {0}", sha1);
+            var info =
+                module.RunCmd(
+                    Settings.GitCommand,
+                    arguments,
+                    GitModule.LosslessEncoding
+                    );
+
+            if (info.Trim().StartsWith("fatal"))
+            {
+                error = "Cannot find commit " + sha1;
+                return;
+            }
+
+            int index = info.IndexOf(sha1) + sha1.Length;
+
+            if (index < 0)
+            {
+                error = "Cannot find commit " + sha1;
+                return;
+            }
+            if (index >= info.Length)
+            {
+                error = info;
+                return;
+            }
+
+            UpdateBodyInCommitData(data, info, module);
         }
 
         /// <summary>
@@ -125,7 +180,7 @@ namespace GitCommands
             if (sha1 == null)
                 throw new ArgumentNullException("sha1");
 
-            var commit = module.Repository.Lookup<LibGit2Sharp.Commit>(sha1);
+            var commit = module.Repository.Lookup<Commit>(sha1);
             if (commit == null)
             {
                 error = "Cannot find commit " + sha1;
@@ -139,7 +194,7 @@ namespace GitCommands
         /// </summary>
         /// <param name="commit">Commit object from libgit2sharp.</param>
         /// <returns>CommitData object populated with parsed info from commit object.</returns>
-        public static CommitData CreateFromCommit(LibGit2Sharp.Commit commit)
+        public static CommitData CreateFromCommit(Commit commit)
         {
             if (commit == null)
                 throw new ArgumentNullException("commit");
@@ -150,12 +205,88 @@ namespace GitCommands
             var committer = string.Format("{0} <{1}>", commit.Committer.Name, commit.Committer.Email); ;
             var commitDate = commit.Committer.When;
 
-            var body = commit.Message;
+            StringBuilder body = new StringBuilder(commit.Message);
+            if (commit.Notes.Any())
+            {
+                body.AppendLine();
+                body.AppendLine("Notes:");
+                foreach (var note in commit.Notes)
+                {
+                    foreach (var line in note.Message.Split('\n'))
+                        body.AppendLine("\t" + line);
+                }
+            }
 
             var parents = commit.Parents.Select(p => p.Sha).ToList().AsReadOnly();
-            var commitInformation = new CommitData(commit.Sha, commit.Tree.Sha, parents, author, authorDate, committer, commitDate, body);
+            var commitInformation = new CommitData(commit.Sha, commit.Tree.Sha, parents, author, authorDate,
+                committer, commitDate, body.ToString());
 
             return commitInformation;
+        }
+
+        public const string ShortLogFormat = "%H%n%e%n%B%nNotes:%n%-N";
+
+        /// <summary>
+        /// Creates a CommitData object from formated commit info data from git.  The string passed in should be
+        /// exact output of a log or show command using --format=LogFormat.
+        /// </summary>
+        /// <param name="data">Formated commit data from git.</param>
+        /// <returns>CommitData object populated with parsed info from git string.</returns>
+        public static void UpdateBodyInCommitData(CommitData commitData, string data, GitModule aModule)
+        {
+            if (data == null)
+                throw new ArgumentNullException("Data");
+
+            var lines = data.Split('\n');
+
+            var guid = lines[0];
+
+            string commitEncoding = lines[1];
+
+            const int startIndex = 2;
+            string message = ProccessDiffNotes(startIndex, lines);
+
+            //commit message is not reencoded by git when format is given
+            Debug.Assert(commitData.Guid == guid);
+            commitData.Body = aModule.ReEncodeCommitMessage(message, commitEncoding);
+        }
+
+        private static string ProccessDiffNotes(int startIndex, string[] lines)
+        {
+            int endIndex = lines.Length - 1;
+            if (lines[endIndex] == "Notes:")
+                endIndex--;
+
+            var message = new StringBuilder();
+            bool bNotesStart = false;
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                string line = lines[i];
+                if (bNotesStart)
+                    line = "    " + line;
+                message.AppendLine(line);
+                if (lines[i] == "Notes:")
+                    bNotesStart = true;
+            }
+
+            return message.ToString();
+        }
+
+        /// <summary>
+        /// Creates a CommitData object from Git revision.
+        /// </summary>
+        /// <param name="revision">Git commit.</param>
+        /// <returns>CommitData object populated with parsed info from git string.</returns>
+        public static CommitData CreateFromRevision(GitRevision revision)
+        {
+            if (revision == null)
+                throw new ArgumentNullException("revision");
+
+            CommitData data = new CommitData(revision.Guid, revision.TreeGuid, revision.ParentGuids.ToList().AsReadOnly(),
+                String.Format("{0} <{1}>", revision.Author, revision.AuthorEmail), revision.AuthorDate,
+                String.Format("{0} <{1}>", revision.Committer, revision.CommitterEmail), revision.CommitDate,
+                revision.Message);
+            return data;
         }
 
         private static string FillToLength(string input, int length)

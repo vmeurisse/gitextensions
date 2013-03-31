@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using GitCommands.Config;
+using System.Threading;
 using LibGit2Sharp;
 
 namespace GitCommands
@@ -29,16 +26,15 @@ namespace GitCommands
         {
             add 
             {
-                backgroundLoader.LoadingError += value;
+                _backgroundLoader.LoadingError += value;
             }
             
             remove 
             {
-                backgroundLoader.LoadingError -= value;
+                _backgroundLoader.LoadingError -= value;
             }
         }
         public event EventHandler Updated;
-        public event EventHandler BeginUpdate;
         public int RevisionCount { get; set; }
 
         public class RevisionGraphUpdatedEventArgs : EventArgs
@@ -54,44 +50,16 @@ namespace GitCommands
         public bool BackgroundThread { get; set; }
         public bool ShaOnly { get; set; }
 
-        private readonly char[] splitChars = " \t\n".ToCharArray();
+        private Dictionary<string, List<GitHead>> _heads;
 
-        private readonly char[] hexChars = "0123456789ABCDEFabcdef".ToCharArray();
+        private readonly AsyncLoader _backgroundLoader = new AsyncLoader();
 
-        private const string COMMIT_BEGIN = "<(__BEGIN_COMMIT__)>"; // Something unlikely to show up in a comment
-
-        private Dictionary<string, List<GitHead>> heads;
-
-
-        private enum ReadStep
-        {
-            Commit,
-            Hash,
-            Parents,
-            Tree,
-            AuthorName,
-            AuthorEmail,
-            AuthorDate,
-            CommitterName,
-            CommitterDate,
-            CommitMessageEncoding,
-            CommitMessage,
-            FileName,
-            Done,
-        }
-
-        private ReadStep nextStep = ReadStep.Commit;
-
-        private GitRevision revision;
-
-        private AsyncLoader backgroundLoader = new AsyncLoader();
-
-        private GitModule Module;
+        private readonly GitModule _module;
 
         public RevisionGraph(GitModule module)
         {
             BackgroundThread = true;
-            Module = module;
+            _module = module;
         }
 
         ~RevisionGraph()
@@ -101,31 +69,32 @@ namespace GitCommands
 
         public void Dispose()
         {
-            backgroundLoader.Cancel();
+            _backgroundLoader.Cancel();
         }
 
         public LogOptions LogParam = LogOptions.All;
         public string Filter = String.Empty;
         public string BranchFilter = String.Empty;
         public RevisionGraphInMemFilter InMemFilter;
-        private string selectedBranchName;
+        private string _selectedBranchName;
 
         public void Execute()
         {
             if (BackgroundThread)
             {
-                backgroundLoader.Load(execute, null);
+                _backgroundLoader.Load(ProccessGitLog, ProccessGitLogExecuted);
             }
             else
             {
-                execute(new FixedLoadingTaskState(false));                
+                ProccessGitLog(new CancellationToken(false));
+                ProccessGitLogExecuted();
             }
         }
 
-        private void execute(ILoadingTaskState taskState)
+        private void ProccessGitLog(CancellationToken taskState)
         {
             RevisionCount = 0;
-            heads = GetHeads().ToDictionaryOfList(head => head.Guid);
+            _heads = GetHeads().ToDictionaryOfList(head => head.Guid);
 
             Filter filter;
             if (Settings.OrderRevisionByDate)
@@ -140,18 +109,19 @@ namespace GitCommands
             // TODO: Support BranchFilter
             // TODO: Support LogParam
             // TODO: Support Filter
-            foreach (var commit in Module.Repository.Commits.QueryBy(filter))
+            foreach (var commit in _module.Repository.Commits.QueryBy(filter))
             {
-                GitRevision revision = new GitRevision(Module, null);
+                GitRevision revision = new GitRevision(_module, null);
                 revision.Author = commit.Author.Name;
-                revision.AuthorDate = commit.Author.When.UtcDateTime;
                 revision.AuthorEmail = commit.Author.Email;
-                revision.CommitDate = commit.Committer.When.UtcDateTime;
+                revision.AuthorDate = commit.Author.When.UtcDateTime;
                 revision.Committer = commit.Committer.Name;
+                revision.CommitterEmail = commit.Committer.Email;
+                revision.CommitDate = commit.Committer.When.UtcDateTime;
                 revision.Guid = commit.Id.Sha;
 
                 List<GitHead> headList;
-                if (heads.TryGetValue(revision.Guid, out headList))
+                if (_heads.TryGetValue(revision.Guid, out headList))
                     revision.Heads.AddRange(headList);
                 revision.Message = commit.MessageShort;
                 // TODO: Support notes
@@ -163,27 +133,32 @@ namespace GitCommands
 
                 if (Updated != null)
                     Updated(this, new RevisionGraphUpdatedEventArgs(revision));
+                if (taskState.IsCancellationRequested)
+                    return;
             }
+        }
 
+        private void ProccessGitLogExecuted()
+        {
             if (Exited != null)
                 Exited(this, EventArgs.Empty);            
         }
 
-        private List<GitHead> GetHeads()
+        private IList<GitHead> GetHeads()
         {
-            var result = Module.GetHeads(true);
-            bool validWorkingDir = Module.ValidWorkingDir();
-            selectedBranchName = validWorkingDir ? Module.GetSelectedBranch() : string.Empty;
-            GitHead selectedHead = result.Find(head => head.Name == selectedBranchName);
+            var result = _module.GetHeads(true);
+            bool validWorkingDir = _module.IsValidGitWorkingDir();
+            _selectedBranchName = validWorkingDir ? _module.GetSelectedBranch() : string.Empty;
+            GitHead selectedHead = result.FirstOrDefault(head => head.Name == _selectedBranchName);
 
             if (selectedHead != null)
             {
                 selectedHead.Selected = true;
 
-                ConfigFile localConfigFile = Module.GetLocalConfig();
+                var localConfigFile = _module.GetLocalConfig();
 
-                GitHead selectedHeadMergeSource =
-                    result.Find(head => head.IsRemote
+                var selectedHeadMergeSource =
+                    result.FirstOrDefault(head => head.IsRemote
                                         && selectedHead.GetTrackingRemote(localConfigFile) == head.Remote
                                         && selectedHead.GetMergeWith(localConfigFile) == head.LocalName);
 

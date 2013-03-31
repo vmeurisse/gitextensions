@@ -17,7 +17,7 @@ namespace GitUIPluginInterfaces
 
         string GetGitDirectory();
 
-        bool IsValidGitWorkingDir(string workingDir);
+        bool IsValidGitWorkingDir();
 
         string GitCommand { get; }
 
@@ -37,8 +37,12 @@ namespace GitUIPluginInterfaces
 
         string RunCmd(string cmd, string arguments);
 
+        string RunCmd(string cmd, string arguments, byte[] stdIn);
+
         string GetSelectedBranch();
 
         bool IsBareRepository();
+
+        bool IsRunningGitProcess();
     }
 }

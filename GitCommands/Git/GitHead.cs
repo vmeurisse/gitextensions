@@ -8,10 +8,11 @@ namespace GitCommands
     {
         private readonly string _mergeSettingName;
         private readonly string _remoteSettingName;
-        private List<IGitItem> _subItems;
+        private IList<IGitItem> _subItems;
         public GitModule Module { get; private set; }
 
-        public GitHead(GitModule module, string guid, string completeName) : this(module, guid, completeName, string.Empty) {}
+        public GitHead(GitModule module, string guid, string completeName)
+            : this(module, guid, completeName, string.Empty) { }
 
         public GitHead(GitModule module, string guid, string completeName, string remote)
         {
@@ -20,10 +21,22 @@ namespace GitCommands
             Selected = false;
             CompleteName = completeName;
             Remote = remote;
-            IsTag = CompleteName.Contains("refs/tags/");
-            IsHead = CompleteName.Contains("refs/heads/");
-            IsRemote = CompleteName.Contains("refs/remotes/");
-            IsBisect = CompleteName.Contains("refs/bisect/");
+            if (CompleteName.StartsWith("refs/heads/"))
+            {
+                IsHead = true;
+            }
+            else if (CompleteName.StartsWith("refs/tags/"))
+            {
+                IsTag = true;
+            }
+            else if (CompleteName.StartsWith("refs/remotes/"))
+            {
+                IsRemote = true;
+            }
+            else if (CompleteName.StartsWith("refs/bisect/"))
+            {
+                IsBisect = true;
+            }
 
             ParseName();
 
@@ -53,9 +66,9 @@ namespace GitCommands
 
         public string TrackingRemote
         {
-            get 
+            get
             {
-                return GetTrackingRemote(Module.GetLocalConfig());    
+                return GetTrackingRemote(Module.GetLocalConfig());
             }
             set
             {
@@ -92,7 +105,7 @@ namespace GitCommands
                 if (String.IsNullOrEmpty(value))
                     Module.UnsetSetting(_mergeSettingName);
                 else
-                    Module.SetSetting(_mergeSettingName, "refs/heads/" + value);
+                    Module.SetSetting(_mergeSettingName, GitCommandHelpers.GetFullBranchName(value));
             }
         }
 
@@ -105,7 +118,6 @@ namespace GitCommands
         {
             string merge = configFile.GetValue(_mergeSettingName);
             return merge.StartsWith("refs/heads/") ? merge.Substring(11) : merge;
-
         }
 
 
@@ -124,7 +136,7 @@ namespace GitCommands
         public string Guid { get; private set; }
         public string Name { get; private set; }
 
-        public List<IGitItem> SubItems
+        public IEnumerable<IGitItem> SubItems
         {
             get { return _subItems ?? (_subItems = Module.GetTree(Guid, false)); }
         }

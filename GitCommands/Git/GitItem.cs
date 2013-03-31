@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace GitCommands
 {
+    [DebuggerDisplay("GitItem( {FileName} )")]
     public class GitItem : IGitItem
     {
         internal const int MinimumStringLength = 53;
@@ -21,7 +23,7 @@ namespace GitCommands
             Module = aModule;
         }
 
-        private List<IGitItem> subItems;
+        private IList<IGitItem> subItems;
 
         public bool IsBlob
         {
@@ -38,7 +40,7 @@ namespace GitCommands
             get { return ItemType == "tree"; }
         }
 
-        public List<IGitItem> SubItems
+        public IEnumerable<IGitItem> SubItems
         {
             get
             {
@@ -104,7 +106,5 @@ namespace GitCommands
 
             return items;
         }
-
-
     }
 }
